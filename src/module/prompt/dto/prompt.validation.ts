@@ -9,9 +9,9 @@ export class PromptValidation {
   });
   static readonly chagePrompt: ZodType = z.object({
     id: z.string().min(1).max(225),
-    name: z.string().min(1).max(100),
-    prompt: z.string().min(1).max(50),
-    modelName: z.string().min(1).max(50),
+    name: z.string().min(1).max(100).optional(),
+    prompt: z.string().min(1).max(50).optional(),
+    modelName: z.string().min(1).max(50).optional(),
   });
   static readonly Pagination: ZodType = z.object({
     page: z.string().min(1).max(50),

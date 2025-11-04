@@ -7,8 +7,8 @@ export class LLmValidation {
   });
   static readonly chageLLM: ZodType = z.object({
     id: z.number().min(1).max(225),
-    name: z.string().min(1).max(100),
-    version: z.string().min(1).max(50),
+    name: z.string().min(1).max(100).optional(),
+    version: z.string().min(1).max(50).optional(),
   });
   static readonly Pagination: ZodType = z.object({
     page: z.string().min(1).max(50),

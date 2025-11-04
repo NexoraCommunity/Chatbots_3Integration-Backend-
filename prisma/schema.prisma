@@ -40,7 +40,7 @@ model Account {
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 
-  user User @relation(fields: [userId], references: [id])
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
   @@map("Account")
 }
@@ -53,7 +53,7 @@ model WhatsaapBussinessAccount {
   displayName String        @db.VarChar(100)
   email       String?       @db.VarChar(100)
   businessId  String        @db.VarChar(255)
-  user        User          @relation(fields: [userId], references: [id])
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   numberPhone NumberPhone[]
 
   @@map("WhatsaapBussinessAccount")
@@ -63,7 +63,7 @@ model NumberPhone {
   id                         String                   @id @default(uuid())
   numberPhoneId              String
   whatsaapBussinessAccountId String                   @default(uuid())
-  WhatsaapBussinessAccount   WhatsaapBussinessAccount @relation(fields: [whatsaapBussinessAccountId], references: [id])
+  WhatsaapBussinessAccount   WhatsaapBussinessAccount @relation(fields: [whatsaapBussinessAccountId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
   @@map("NumberPhone")
 }
@@ -76,7 +76,7 @@ model UserOtp {
   expiresAt DateTime
   createdAt DateTime @default(now())
 
-  user User @relation(fields: [userId], references: [id])
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
   @@map("UserOTP")
 }
@@ -90,7 +90,7 @@ model Prompt {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user User  @relation(fields: [userId], references: [id])
+  user User  @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   bot  Bot[]
 
   @@map("Prompt")
@@ -118,9 +118,9 @@ model Bot {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user         User               @relation(fields: [userId], references: [id])
-  prompt       Prompt             @relation(fields: [promptId], references: [id])
-  llm          LargeLanguageModel @relation(fields: [llmId], references: [id])
+  user         User               @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  prompt       Prompt             @relation(fields: [promptId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  llm          LargeLanguageModel @relation(fields: [llmId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   conversation Conversation[]
 
   @@map("BOT")
@@ -133,7 +133,7 @@ model Conversation {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  bot      Bot       @relation(fields: [botId], references: [id])
+  bot      Bot       @relation(fields: [botId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   messages Message[]
 
   @@map("Conversation")
@@ -147,7 +147,7 @@ model Message {
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
-  conversation Conversation @relation(fields: [conversationId], references: [id])
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
   @@map("Message")
 }

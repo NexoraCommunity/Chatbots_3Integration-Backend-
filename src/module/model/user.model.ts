@@ -54,3 +54,29 @@ export class FacebookOauth {
   busineesId: string;
   wabaId: string;
 }
+
+export class GetCurrentUser {
+  id: string;
+  firstName: string;
+  lastName?: string | null;
+  email: string;
+  picture?: string | null;
+}
+
+export class PostCurrentUser {
+  id: string;
+  firstName: string;
+  lastName?: string | null;
+  picture?: string | null;
+}
+
+export class VerifPassword {
+  id: string;
+  email: string;
+  password: string;
+  codeOTP: string;
+}
+export class UpdatePassworduser {
+  id: string;
+  email: string;
+}

@@ -10,12 +10,7 @@ import {
   Query,
 } from '@nestjs/common';
 import { PromptService } from './service/prompt.service';
-import {
-  changePrompt,
-  GetModelPrompt,
-  postPrompt,
-  PromptApi,
-} from '../model/prompt.model';
+import { GetModelPrompt, postPrompt, PromptApi } from '../model/prompt.model';
 import { WebResponse } from '../model/web.model';
 import { Prompt } from '@prisma/client';
 

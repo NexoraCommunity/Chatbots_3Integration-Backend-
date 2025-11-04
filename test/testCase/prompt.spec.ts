@@ -27,12 +27,6 @@ describe('PromptRouteTest', () => {
     await app.init();
   });
 
-  afterAll(async () => {
-    test.DeleteAllLLM();
-    test.DeleteAllPromptUser();
-    test.DeleteTestUser();
-  });
-
   describe('GET /api/prompt', () => {
     it('should be accepted if user authentication and request valid', async () => {
       const accessToken = await test.getAccessToken();

@@ -44,7 +44,6 @@ export class LlmController {
   @Get('llm/:id')
   @HttpCode(200)
   async getLLMbyid(@Param('id') id: string): Promise<WebResponse<LLM>> {
-    console.log(id);
     const data = await this.llmService.getLLmbyId(id);
     return {
       data: data,

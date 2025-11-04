@@ -23,6 +23,7 @@ import { AuthMiddleware } from './middleware/auth.middleware';
     EmailService,
     CredentialStrategy,
   ],
+  exports: [EmailService],
 })
 export class AuthModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

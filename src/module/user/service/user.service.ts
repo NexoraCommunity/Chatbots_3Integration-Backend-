@@ -1,0 +1,268 @@
+import { HttpException, Injectable } from '@nestjs/common';
+import { PrismaService } from 'src/module/common/prisma.service';
+import { ValidationService } from 'src/module/common/validation.service';
+import {
+  GetCurrentUser,
+  PostCurrentUser,
+  UpdatePassworduser,
+  VerifPassword,
+} from 'src/module/model/user.model';
+import { userValidation } from '../dto/user.validation';
+import { EmailService } from 'src/module/auth/service/email.service';
+import bcrypt from 'bcrypt';
+
+@Injectable()
+export class UserService {
+  constructor(
+    private prismaService: PrismaService,
+    private validationService: ValidationService,
+    private emailService: EmailService,
+  ) {}
+
+  async getCurrentUser(accessToken: string): Promise<GetCurrentUser> {
+    const user = await this.prismaService.account.findFirst({
+      where: {
+        accessToken: accessToken,
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            firstName: true,
+            email: true,
+            lastName: true,
+            picture: true,
+          },
+        },
+      },
+    });
+
+    if (user?.user) return user.user;
+    throw new HttpException('Cannot find current user', 403);
+  }
+
+  async updateUser(request: PostCurrentUser) {
+    const requestValidation: PostCurrentUser = this.validationService.validate(
+      userValidation.RequestUser,
+      request,
+    );
+
+    if (!requestValidation) throw new HttpException('Validation Error', 400);
+
+    try {
+      const data = await this.prismaService.user.update({
+        where: {
+          id: request.id,
+        },
+        select: {
+          id: true,
+          firstName: true,
+          email: true,
+          lastName: true,
+          picture: true,
+        },
+        data: requestValidation,
+      });
+
+      return data;
+    } catch (error) {
+      throw new HttpException('UserId is Invalid', 400);
+    }
+  }
+
+  async sendOtp(request: UpdatePassworduser) {
+    const requestValidation: UpdatePassworduser =
+      this.validationService.validate(userValidation.UpdatePassword, request);
+
+    if (!requestValidation) throw new HttpException('Validation Error', 400);
+    const OTP = await this.emailService.generateOtp();
+    const html = this.html(OTP.codeOtp);
+    await this.emailService.sendEmail({
+      html: html,
+      recipients: request.email,
+      subject: 'Verify your OTP to change password',
+    });
+
+    await this.prismaService.userOtp.create({
+      data: {
+        otpCode: OTP.codeOtp,
+        expiresAt: OTP.expiredAt,
+        userId: request.id,
+      },
+    });
+  }
+
+  async updateUserPassword(request: VerifPassword) {
+    const requestValidation: VerifPassword = this.validationService.validate(
+      userValidation.VerifPassword,
+      request,
+    );
+
+    if (!requestValidation) throw new HttpException('Validation Error', 400);
+
+    const findOTP = await this.prismaService.user.findFirst({
+      where: {
+        email: requestValidation.email,
+      },
+      include: {
+        userOtp: {
+          where: {
+            isUsed: false,
+          },
+          orderBy: {
+            createdAt: 'desc',
+          },
+          take: 1,
+        },
+      },
+    });
+
+    const OTP = findOTP?.userOtp[0];
+
+    if (!OTP) {
+      throw new HttpException('Internal Server Error!!', 500);
+    }
+
+    if (OTP?.expiresAt < new Date()) {
+      await this.prismaService.userOtp.delete({ where: { id: OTP?.id } });
+      throw new HttpException('OTP code is expired!!', 400);
+    }
+
+    if (OTP?.otpCode !== request.codeOTP) {
+      throw new HttpException('Invalid OTP code!!', 400);
+    }
+
+    await this.prismaService.userOtp.update({
+      where: {
+        id: OTP.id,
+      },
+      data: {
+        isUsed: true,
+      },
+    });
+    const hasPassword = await bcrypt.hash(requestValidation.password, 10);
+
+    await this.prismaService.user.update({
+      where: {
+        id: request.id,
+      },
+      data: {
+        password: hasPassword,
+      },
+    });
+  }
+
+  async deleteUser(userId: string) {
+    if (!userId) throw new HttpException('Validation Error', 400);
+    try {
+      const data = await this.prismaService.user.delete({
+        where: {
+          id: userId,
+        },
+      });
+      return data;
+    } catch (error) {
+      throw new HttpException('UserId is Invalid', 400);
+    }
+  }
+
+  html(VerificationCode) {
+    return `
+    <!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OTP Verification</title>
+<style>
+/* General reset */
+body,table,td,a{ -webkit-text-size-adjust:100%; -ms-text-size-adjust:100%; }
+table,td{ mso-table-lspace:0pt; mso-table-rspace:0pt; }
+img{ -ms-interpolation-mode:bicubic; }
+img { border:0; height:auto; line-height:100%; outline:none; text-decoration:none; }
+a[x-apple-data-detectors]{ color:inherit !important; text-decoration:none !important; font-size:inherit !important; }
+
+
+/* Layout */
+body{ margin:0; padding:0; width:100% !important; background-color:#f4f6f8; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; }
+.wrapper{ width:100%; table-layout:fixed; background-color:#f4f6f8; padding-bottom:40px; }
+.main{ background-color:#ffffff; margin:0 auto; width:100%; max-width:600px; border-radius:12px; overflow:hidden; box-shadow:0 6px 18px rgba(23,43,77,0.08); }
+
+
+/* Header */
+.header{ background: linear-gradient(90deg,#4F46E5 0%, #06B6D4 100%); color:#fff; padding:24px 28px; display:flex; align-items:center; gap:16px; }
+.logo{ height:40px; width:auto; }
+.company-name{ font-weight:700; font-size:18px; letter-spacing:0.2px; }
+
+
+/* Content */
+.content{ padding:30px 28px 24px 28px; color:#0f172a; }
+.preheader{ color:#94a3b8; font-size:13px; margin-bottom:18px; }
+.title{ font-size:20px; font-weight:700; margin:0 0 12px 0; }
+.lead{ font-size:15px; margin:0 0 18px 0; color:#334155; }
+
+
+.otp-box{ display:flex; justify-content:center; align-items:center; gap:14px; padding:18px; background:#f8fafc; border-radius:10px; margin:18px 0; }
+.otp-code{ font-size:28px; letter-spacing:6px; font-weight:800; color:#0f172a; }
+.small{ font-size:13px; color:#64748b; }
+
+
+.btn-wrap{ text-align:center; margin:14px 0 6px 0; }
+.cta{ display:inline-block; padding:12px 22px; border-radius:10px; background:#0ea5a4; color:#fff; text-decoration:none; font-weight:700; }
+
+
+.note{ font-size:13px; color:#475569; line-height:1.45; margin-top:18px; }
+
+
+/* Footer */
+.footer{ padding:18px 28px; font-size:13px; color:#94a3b8; text-align:center; }
+.footer a{ color:#8b5cf6; text-decoration:none; }
+
+
+/* Responsive */
+@media screen and (max-width:480px){
+.header{ padding:18px; }
+.content{ padding:20px; }
+.otp-code{ font-size:24px; letter-spacing:5px; }
+}
+</style>
+</head>
+<body>
+<center class="wrapper">
+<table class="main" role="presentation" cellpadding="0" cellspacing="0" width="100%" align="center">
+<tr>
+<td class="header">
+<!-- Logo (replace with your logo url) -->
+<img src="https://i.ibb.co.com/rfRfv88s/logos.png" alt="{{COMPANY_NAME}}" class="logo" style="display:block">
+<div style="flex:1">
+<div class="company-name">Pibots</div>
+<div style="font-size:12px; color:rgba(255,255,255,0.9); margin-top:3px;">Keamanan & Otentikasi ChatBot</div>
+</div>
+</td>
+</tr>
+
+
+<tr>
+<td class="content">
+<div class="preheader">Kode OTP Anda untuk mengganti password — jangan berikan kepada siapapun.</div>
+
+
+<h1 class="title">Kode OTP Anda</h1>
+<p class="lead">Halo, gunakan kode berikut untuk menyelesaikan proses masuk atau verifikasi Anda. Kode hanya berlaku selama <strong>5 menit</strong>.</p>
+
+
+<div class="otp-box" role="article" aria-label="Kode OTP">
+<div class="otp-code" aria-live="polite">${VerificationCode}</div>
+</div>
+
+
+<div class="btn-wrap">
+<!-- Optional button (link to verify) -->
+<a href="{{VERIFY_LINK}}" class="cta">Verifikasi Sekarang</a>
+</div>
+
+
+<p class="note">Jika Anda tidak melakukan permintaan ini, Anda dapat mengabaikan email ini. Untuk keamanan tambahan, jangan bagikan kode OTP Anda kepada siapapun, termasuk orang yang mengaku dari tim Pibots.</p>
+</html>`;
+  }
+}
