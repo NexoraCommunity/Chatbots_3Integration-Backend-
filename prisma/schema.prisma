@@ -20,6 +20,8 @@ model User {
   bot                      Bot[]
   authProvider             Account[]
   userOtp                  UserOtp[]
+  product                  Product[]
+  category                 Category[]
   createdAt                DateTime                   @default(now())
   updatedAt                DateTime                   @updatedAt
   WhatsaapBussinessAccount WhatsaapBussinessAccount[]
@@ -43,6 +45,27 @@ model Account {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
   @@map("Account")
+}
+
+model WhatsappSession {
+  id        String   @id
+  data      String   @db.LongText
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("WhatsappSession")
+}
+
+model WhatsappKeys {
+  id        String
+  type      String
+  value     String   @db.LongText
+  sessionId String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@id([sessionId, id, type])
+  @@map("WhatsappKeys")
 }
 
 model WhatsaapBussinessAccount {
@@ -85,8 +108,7 @@ model Prompt {
   id        String   @id @default(uuid())
   userId    String   @default(uuid())
   name      String   @db.VarChar(100)
-  prompt    String
-  modelName String?  @db.VarChar(100)
+  prompt    String   @db.LongText
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -96,45 +118,33 @@ model Prompt {
   @@map("Prompt")
 }
 
-model LargeLanguageModel {
-  id        Int      @id @default(autoincrement())
-  name      String   @db.VarChar(100)
-  version   String   @db.VarChar(50)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  bot Bot[]
-
-  @@map("LargeLanguageModel")
-}
-
 model Bot {
   id        String   @id @default(uuid())
   userId    String   @default(uuid())
   promptId  String   @default(uuid())
-  llmId     Int
-  name      String   @db.VarChar(100)
-  type      String?  @db.VarChar(50)
+  bot_name  String   @db.VarChar(100)
+  is_active Boolean? @default(false)
+  type      String   @db.VarChar(50)
+  dataType  String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user         User               @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  prompt       Prompt             @relation(fields: [promptId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  llm          LargeLanguageModel @relation(fields: [llmId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  user         User           @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  prompt       Prompt         @relation(fields: [promptId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   conversation Conversation[]
 
   @@map("BOT")
 }
 
 model Conversation {
-  id        String   @id @default(uuid())
-  botId     String   @default(uuid())
-  room      String?  @db.VarChar(100)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id        String    @id @default(uuid())
+  botId     String    @default(uuid())
+  room      String?   @db.VarChar(100)
+  messages  Message[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 
-  bot      Bot       @relation(fields: [botId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  messages Message[]
+  bot Bot @relation(fields: [botId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
   @@map("Conversation")
 }
@@ -150,4 +160,50 @@ model Message {
   conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
   @@map("Message")
+}
+
+model Product {
+  id          String    @id @default(uuid())
+  userId      String    @default(uuid())
+  name        String    @db.VarChar(100)
+  description String    @db.VarChar(500)
+  price       Float     @db.Float()
+  stock       Int
+  weight      Float     @db.Float()
+  image       String    @db.VarChar(225)
+  variant     Variant[]
+  sku         String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@map("Product")
+}
+
+model Category {
+  id        String   @id @default(uuid())
+  userId    String   @default(uuid())
+  name      String   @db.VarChar(100)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@map("Category")
+}
+
+model Variant {
+  id              String   @id @default(uuid())
+  productId       String   @default(uuid())
+  name            String   @db.VarChar(100)
+  value           String   @db.VarChar(100)
+  image           String
+  priceAdjustment Float    @db.Float()
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@map("Variant")
 }

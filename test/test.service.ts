@@ -90,24 +90,6 @@ export class testService {
     return refreshToken?.accessToken;
   }
 
-  // LLM test service
-
-  async DeleteAllLLM() {
-    await this.prismaService.largeLanguageModel.deleteMany({
-      where: {
-        name: 'test',
-      },
-    });
-  }
-  async getLLM() {
-    const data = await this.prismaService.largeLanguageModel.findFirst({
-      where: {
-        name: 'test',
-      },
-    });
-    return data;
-  }
-
   // Prompt test service
 
   async DeleteAllPromptUser() {

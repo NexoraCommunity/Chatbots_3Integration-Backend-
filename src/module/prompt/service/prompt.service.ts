@@ -110,7 +110,6 @@ export class PromptService {
     const res: PromptApi = {
       name: data.name,
       prompt: data.prompt,
-      modelName: String(data.modelName),
     };
 
     return res;
@@ -134,7 +133,6 @@ export class PromptService {
       const res: PromptApi = {
         name: data.name,
         prompt: data.prompt,
-        modelName: String(data.modelName),
       };
       return res;
     } catch (error) {

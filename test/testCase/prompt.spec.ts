@@ -87,7 +87,6 @@ describe('PromptRouteTest', () => {
         .send({
           name: 'test',
           prompt: 'test',
-          modelName: 'test',
           userId: user?.id,
         })
         .set('Authorization', String(accessToken));
@@ -95,7 +94,6 @@ describe('PromptRouteTest', () => {
       expect(response.status).toBe(200);
       expect(response.body.message).toBe('Prompt created succesfully!!');
       expect(response.body.data.name).toBe('test');
-      expect(response.body.data.modelName).toBe('test');
       expect(response.body.data.prompt).toBe('test');
     });
     it('should be rejected if request is invalid', async () => {
@@ -104,7 +102,6 @@ describe('PromptRouteTest', () => {
         .post('/api/prompt')
         .send({
           name: '',
-          modelName: '',
           prompt: '',
           userId: '',
         })
@@ -131,7 +128,6 @@ describe('PromptRouteTest', () => {
         .post('/api/prompt')
         .send({
           name: 'test',
-          modelName: 'Llama8.0',
           prompt: 'testAowkoawkoak',
           userId: 'aokwoakowkoakw',
         })
@@ -145,7 +141,6 @@ describe('PromptRouteTest', () => {
         .post('/api/prompt')
         .send({
           name: 'test',
-          modelName: 'Llama8.0',
           prompt: 'testAowkoawkoak',
           userId: 'aokwoakowkoakw',
         })
@@ -169,7 +164,6 @@ describe('PromptRouteTest', () => {
 
       expect(response.status).toBe(200);
       expect(response.body.data.name).toBe('test');
-      expect(response.body.data.modelName).toBe('test');
       expect(response.body.data.prompt).toBe('test');
     });
 
@@ -192,7 +186,6 @@ describe('PromptRouteTest', () => {
         .patch(`/api/prompt/${prompt?.id}`)
         .send({
           name: '',
-          modelName: '',
           prompt: '',
         })
         .set('Authorization', String(accessToken));
@@ -206,7 +199,6 @@ describe('PromptRouteTest', () => {
         .patch(`/api/prompt/aokwokwokwko`)
         .send({
           name: 'test',
-          modelName: 'test8.0',
           prompt: 'test',
         })
         .set('Authorization', String(accessToken));
@@ -221,7 +213,6 @@ describe('PromptRouteTest', () => {
         .patch(`/api/prompt/${prompt?.id}`)
         .send({
           name: 'test',
-          modelName: 'test8.0',
           prompt: 'test',
         })
         .set('Authorization', String(accessToken));
@@ -229,7 +220,6 @@ describe('PromptRouteTest', () => {
       expect(response.status).toBe(200);
       expect(response.body.message).toBe('Prompt updated succesfully!!');
       expect(response.body.data.name).toBe('test');
-      expect(response.body.data.modelName).toBe('test8.0');
       expect(response.body.data.prompt).toBe('test');
     });
     it('patch should be rejected if unathorized', async () => {
@@ -237,7 +227,6 @@ describe('PromptRouteTest', () => {
         .patch('/api/prompt/aowkoakowko')
         .send({
           name: 'test',
-          modelName: 'Llama8.0',
           prompt: 'testAowkoawkoak',
         });
 
@@ -250,7 +239,6 @@ describe('PromptRouteTest', () => {
         .patch('/api/prompt/akwokwokw')
         .send({
           name: 'test',
-          modelName: 'Llama8.0',
           prompt: 'testAowkoawkoak',
         })
         .set('Authorization', 'Invalid Token');
@@ -263,7 +251,6 @@ describe('PromptRouteTest', () => {
         .patch('/api/prompt/aokwokoa')
         .send({
           name: 'test',
-          modelName: 'Llama8.0',
           prompt: 'testAowkoawkoak',
         })
         .set(

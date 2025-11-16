@@ -3,7 +3,7 @@ import { Body, Controller, Get, Post, Query, Res } from '@nestjs/common';
 import type { Response } from 'express';
 import { wabaService } from './whatsaap/waba.service';
 
-@Controller('/api')
+@Controller('/auth')
 export class IntegrationsController {
   constructor(private wabaService: wabaService) {}
 
@@ -26,7 +26,6 @@ export class IntegrationsController {
   }
   @Post('/waba/callback')
   CatchWebhook(@Res() res: Response, @Body() body: any) {
-    // console.log('📩 Webhook received:', JSON.stringify(body, null, 2));
     if (body.object === 'whatsapp_business_account') {
       body.entry?.forEach((entry) => {
         const wabaId = entry.id;

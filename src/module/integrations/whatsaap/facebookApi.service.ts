@@ -36,17 +36,6 @@ export class FacebookApiService {
     );
     return phoneRes.data.data || [];
   }
-  async getLongLiveAccessToken(accessToken) {
-    const clientId = this.configService.get('FACEBOOK_CLIENT_ID');
-    const clientSecret = this.configService.get('FACEBOOK_CLIENT_SECRET');
-    const longAccessToken = await axios.get(
-      `https://graph.facebook.com/oauth/access_token?grant_type=fb_exchange_token
-      &client_id=${clientId}
-        &client_secret=${clientSecret}
-        &fb_exchange_token=${accessToken}`,
-    );
-    return longAccessToken;
-  }
 
   async PostMessage(req: PostMessage) {
     const accessToken = this.configService.get('ACCESS_TOKEN_PERMANENT');

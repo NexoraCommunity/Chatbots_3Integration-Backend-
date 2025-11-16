@@ -32,11 +32,8 @@ export class wabaService {
 
     if (!findWabaAccount) throw new HttpException('Unauthorized', 400);
 
-    // Find Bot settings
-
     const aiResponse = await this.groqService.createCompletions(req.text);
 
-    // Generate by LLM Type Message return Json
     const data: PostMessage = {
       type: 'text',
       message: String(aiResponse),

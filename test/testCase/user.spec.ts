@@ -28,7 +28,6 @@ describe('UserRouteTest', () => {
   });
 
   afterAll(async () => {
-    test.DeleteAllLLM();
     test.DeleteAllPromptUser();
     test.DeleteTestUser();
   });

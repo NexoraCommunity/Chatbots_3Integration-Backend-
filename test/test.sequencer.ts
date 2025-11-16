@@ -7,7 +7,7 @@ interface Test {
 
 export default class CustomSequencer extends Sequencer {
   sort(tests: Test[]): Test[] {
-    const order = ['auth.spec', 'llm.spec', 'prompt.spec'];
+    const order = ['auth.spec', 'prompt.spec', 'user.spec'];
 
     return tests.sort((a, b) => {
       const aIndex = order.findIndex((key) => a.path.includes(key));
