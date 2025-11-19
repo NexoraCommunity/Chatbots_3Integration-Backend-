@@ -1,66 +1,105 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { HttpException, Injectable, OnModuleInit } from '@nestjs/common';
 import makeWASocket, { DisconnectReason, useMultiFileAuthState } from 'baileys';
-import * as qrcode from 'qrcode-terminal';
+import * as qrcode from 'qrcode';
+import * as qrcodeT from 'qrcode-terminal';
 import { WhatsappAuthService } from './session.service';
 import { PrismaService } from 'src/module/common/prisma.service';
-import { GroqService } from 'src/module/llm/LlmService/groq.service';
+import { AiService } from 'src/module/aiWrapper/service/aiWrapper.service';
+import { ConversationWrapper } from 'src/model/aiWrapper';
+import { ResponseBot } from 'src/model/bot.model';
 
 @Injectable()
-export class WhatsaapManagerService implements OnModuleInit {
+export class BaileysService implements OnModuleInit {
   constructor(
     private whatsappAuth: WhatsappAuthService,
     private prismaService: PrismaService,
-    private groqService: GroqService,
+    private aiService: AiService,
   ) {}
 
   private bots = new Map<string, any>();
-  private disabledBots = new Set<string>();
 
   async onModuleInit() {
-    this.startBot('okay');
+    const botActives = await this.prismaService.bot.findMany({
+      where: {
+        is_active: true,
+        type: 'whatsapp',
+      },
+    });
+
+    botActives.map((e) => {
+      this.startBot(e.id);
+    });
   }
 
-  async startBot(botId: string) {
-    if (this.disabledBots.has(botId)) {
-      console.log(`[${botId}] ⚠️ Bot sedang nonaktif `);
-      return;
-    }
-
+  async startBot(botId: string, sendUpdate?: (data: any) => void) {
     try {
+      if (this.bots.has(botId)) {
+        console.log(`[${botId}] Bot sedang aktif`);
+        sendUpdate?.({ message: '⚠️  Bot Sedang Aktif', botId: botId });
+        return;
+      }
       const { state, saveCreds } =
         await this.whatsappAuth.useDatabaseAuthState(botId);
 
       const sock = makeWASocket({
         auth: state,
-        syncFullHistory: true,
-        shouldSyncHistoryMessage: (msg) => true,
+        syncFullHistory: false,
+        shouldSyncHistoryMessage: (msg) => false,
       });
-
-      this.bots.set(botId, sock);
 
       sock.ev.on('connection.update', async (update) => {
         const { connection, lastDisconnect, qr } = update;
         if (qr) {
-          console.log(`[${botId}] QR baru muncul, scan di terminal`);
-          qrcode.generate(qr, { small: true });
+          const QrCode = await qrcode.toDataURL(qr, { type: 'image/png' });
+          qrcodeT.generate(qr, { small: true });
+          sendUpdate?.({
+            message: 'QrCode Generated',
+            qrCode: QrCode,
+            type: 'whatsapp',
+            botId: botId,
+          });
+          return;
         }
         if (connection === 'open') {
-          console.log(`[${botId}] ✅ Terhubung ke WhatsApp`);
+          this.bots.set(botId, sock);
+          sendUpdate?.({
+            message: 'Bot Connected to whatsapp',
+            type: 'whatsapp',
+            botId: botId,
+          });
+          return;
         } else if (connection === 'close') {
           const statusCode = (lastDisconnect?.error as any)?.output?.statusCode;
           const shouldReconnect = statusCode !== DisconnectReason.loggedOut;
-          console.log(`[${botId}] ❌ Terputus (${statusCode})`);
+
           if (shouldReconnect) {
             console.log(`[${botId}] 🔁 Reconnect...`);
-            this.startBot(botId);
+
+            setTimeout(() => {
+              this.startBot(botId);
+            }, 5000);
           } else {
             console.log(`[${botId}] Logout total, perlu scan ulang`);
             await this.logOut(botId);
+            sendUpdate?.({
+              message: `[${botId}] Logout total, perlu scan ulang. refresh halaman untuk generate qrCode`,
+              type: 'whatsapp',
+              botId: botId,
+            });
+            return;
           }
         }
       });
 
-      sock.ev.on('creds.update', saveCreds);
+      sock.ev.on('creds.update', async () => {
+        await saveCreds();
+        if (this.bots.get(botId)) return;
+        sendUpdate?.({
+          message: 'QR berhasil discan. please refresh page!!',
+          botId: botId,
+          type: 'whatsapp',
+        });
+      });
 
       sock.ev.on('messages.upsert', async (msg) => {
         try {
@@ -73,15 +112,18 @@ export class WhatsaapManagerService implements OnModuleInit {
               !sender?.endsWith('@s.whatsapp.net')
             )
               return;
-
             const text =
               m.message?.conversation?.toLowerCase() ||
               m.message?.extendedTextMessage?.text;
 
             if (text) {
-              const aiResponse = await this.groqService.createCompletions(
-                String(text),
-              );
+              const data: ConversationWrapper = {
+                room: `${botId}${sender}`,
+                botId: botId,
+                integrationType: 'baileys',
+                message: text,
+              };
+              const aiResponse = await this.aiService.wrapper(data);
 
               await sock.sendMessage(String(sender), {
                 text: String(aiResponse),
@@ -90,35 +132,33 @@ export class WhatsaapManagerService implements OnModuleInit {
           }
         } catch (err: any) {
           if (err.message?.includes('No session found to decrypt message')) {
-            console.warn('⚠️ Pesan tidak bisa didekripsi, lewati. ');
+            console.warn('⚠️ Pesan tidak bisa didekripsi, lewati.');
             return;
           }
           console.error('❌ Error saat memproses pesan:', err);
         }
       });
     } catch (err) {
-      console.log(`Gagal start bot ${botId}: ${err}`);
+      sendUpdate?.({
+        message: `Cannot StartBot Because: ${err}`,
+        botId: botId,
+        type: 'whatsapp',
+      });
+      return;
     }
   }
 
   async disableBot(botId: string) {
-    this.disabledBots.add(botId);
-
     const sock = this.bots.get(botId);
     if (sock) {
       await sock.ws.close();
       this.bots.delete(botId);
     }
-
     console.log(`[${botId}] 🔌 Bot dinonaktifkan`);
-  }
-  async enableBot(botId: string) {
-    this.disabledBots.delete(botId);
-    console.log(`[${botId}] 🔋 Bot diaktifkan kembali — reconnecting...`);
-    await this.startBot(botId);
   }
 
   async logOut(botId: string) {
+    this.bots.delete(botId);
     await this.prismaService.whatsappSession.delete({
       where: {
         id: botId,

@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { ConversationWrapper } from 'src/model/aiWrapper';
 import { PrismaService } from 'src/module/common/prisma.service';
 import { GroqService } from 'src/module/llm/LlmService/groq.service';
 
@@ -9,7 +10,7 @@ export class AiService {
     private groqService: GroqService,
   ) {}
 
-  async wrapper(type: string) {
+  async wrapper(type: ConversationWrapper) {
     return 'Response';
   }
 

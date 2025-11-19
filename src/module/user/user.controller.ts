@@ -11,9 +11,9 @@ import {
   Res,
 } from '@nestjs/common';
 import type { Request, Response } from 'express';
-import { WebResponse } from '../model/web.model';
+import { WebResponse } from 'src/model/web.model';
 import { UserService } from './service/user.service';
-import { GetCurrentUser, PostCurrentUser } from '../model/user.model';
+import { GetCurrentUser, PostCurrentUser } from 'src/model/user.model';
 
 @Controller('api')
 export class UserController {

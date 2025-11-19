@@ -9,27 +9,13 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
-import { WebResponse } from '../model/web.model';
-import { BotApi, GetModelbot, postBot } from '../model/bot.model';
+import { WebResponse } from 'src/model/web.model';
+import { BotApi, GetModelbot, postBot } from 'src/model/bot.model';
 import { Bot } from '@prisma/client';
 import { BotService } from './service/bot.service';
-import { WhatsaapManagerService } from '../integrations/whatsaap/whatsaap.service';
-@Controller('api')
+@Controller('')
 export class BotController {
-  constructor(
-    private botService: BotService,
-    private whatsaapService: WhatsaapManagerService,
-  ) {}
-
-  @Get('bot/start-bot')
-  @HttpCode(200)
-  async startBot(@Query() query) {
-    if (query.botId === '' || query.botId === undefined) return;
-    await this.whatsaapService.startBot(query.botId);
-    return {
-      message: 'generated',
-    };
-  }
+  constructor(private botService: BotService) {}
 
   @Post('bot')
   @HttpCode(200)

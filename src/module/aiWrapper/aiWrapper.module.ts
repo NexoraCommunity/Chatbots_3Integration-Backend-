@@ -8,4 +8,4 @@ import { AiService } from './service/aiWrapper.service';
   providers: [AiService],
   exports: [AiService],
 })
-export class IntegrationsModule {}
+export class AiWrapperModule {}

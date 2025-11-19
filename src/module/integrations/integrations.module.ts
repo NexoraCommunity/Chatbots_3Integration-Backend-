@@ -1,22 +1,29 @@
 import { Module } from '@nestjs/common';
 import { IntegrationsController } from './integrations.controller';
-import { FacebookApiService } from './whatsaap/facebookApi.service';
-import { wabaService } from './whatsaap/waba.service';
+import { FacebookApiService } from './service/waba/facebookApi.service';
+import { WabaService } from './service/waba/waba.service';
 import { LlmModule } from '../llm/llm.module';
-import { WhatsaapManagerService } from './whatsaap/whatsaap.service';
-import { WhatsappAuthService } from './whatsaap/session.service';
-import { BotFatherService } from './telegram/botFather.service';
+import { BaileysService } from './service/baileys/whatsaap.service';
+import { WhatsappAuthService } from './service/baileys/session.service';
+import { BotFatherService } from './service/botFather/botFather.service';
+import { MessageModule } from '../message/message.module';
+import { ConversationModule } from '../conversation/conversation.module';
+import { AiWrapperModule } from '../aiWrapper/aiWrapper.module';
+import { integrationGateway } from './integration.gateway';
+import { Integrationservice } from './service/integration.service';
 
 @Module({
-  imports: [LlmModule],
+  imports: [LlmModule, MessageModule, ConversationModule, AiWrapperModule],
   controllers: [IntegrationsController],
   providers: [
     FacebookApiService,
-    wabaService,
+    WabaService,
     BotFatherService,
-    WhatsaapManagerService,
+    integrationGateway,
+    BaileysService,
+    Integrationservice,
     WhatsappAuthService,
   ],
-  exports: [FacebookApiService, WhatsaapManagerService],
+  exports: [FacebookApiService, BaileysService],
 })
 export class IntegrationsModule {}

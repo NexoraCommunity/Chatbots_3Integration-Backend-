@@ -22,8 +22,8 @@ import {
   RegisterUserRequest,
   UserResponse,
   VerificationRequest,
-} from '../model/user.model';
-import { WebResponse } from '../model/web.model';
+} from 'src/model/user.model';
+import { WebResponse } from 'src/model/web.model';
 import { CookieInterceptor } from 'src/interceptors/cookies.interceptors';
 
 @Controller('/auth')

@@ -6,4 +6,8 @@ export class IntegrationsValidation {
     text: z.string().min(1).max(1000),
     from: z.string().min(1).max(50),
   });
+  static readonly StartBot: ZodType = z.object({
+    botId: z.string().min(1).max(225),
+    type: z.string().min(1).max(100),
+  });
 }

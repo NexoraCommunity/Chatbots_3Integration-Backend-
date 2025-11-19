@@ -8,17 +8,15 @@ import {
   PaginationResponseBot,
   postBot,
   startBot,
-} from 'src/module/model/bot.model';
+} from 'src/model/bot.model';
 import { BotValidation } from '../dto/bot.validation';
 import { Bot } from '@prisma/client';
-import { WhatsaapManagerService } from 'src/module/integrations/whatsaap/whatsaap.service';
 
 @Injectable()
 export class BotService {
   constructor(
     private prismaService: PrismaService,
     private readonly validationService: ValidationService,
-    private WhatsaapService: WhatsaapManagerService,
   ) {}
 
   async getBotByUserId(query: GetModelbot): Promise<PaginationResponseBot> {

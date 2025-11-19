@@ -3,6 +3,7 @@ export class PostMessage {
   message: string;
   numberPhoneId: string;
   type: string;
+  accessToken: string;
 }
 
 export class WabaHook {

@@ -1,5 +1,5 @@
 import { PrismaService } from 'src/module/common/prisma.service';
-import { GoogleOauth } from 'src/module/model/user.model';
+import { GoogleOauth } from 'src/model/user.model';
 import { JwtService } from './jwt.service';
 import { Injectable } from '@nestjs/common';
 

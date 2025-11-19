@@ -17,6 +17,15 @@ export class changeBot {
 export class startBot {
   botId: string;
   type: string;
+  data?: string;
+  numberPhoneWaba?: string;
+}
+
+export class ResponseBot {
+  botId?: string;
+  message?: string;
+  type?: string;
+  qrCode?: string;
 }
 export class postBot {
   userId: string;

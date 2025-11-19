@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { Profile, Strategy } from 'passport-facebook';
 import { FacebookService } from '../service/facebook.service';
-import { FacebookApiService } from 'src/module/integrations/whatsaap/facebookApi.service';
+import { FacebookApiService } from 'src/module/integrations/service//waba/facebookApi.service';
 
 @Injectable()
 export class FacebookStrategy extends PassportStrategy(Strategy, 'facebook') {

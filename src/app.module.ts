@@ -7,6 +7,9 @@ import { PromptModule } from './module/prompt/prompt.module';
 import { UserModule } from './module/user/user.module';
 import { PassportModule } from '@nestjs/passport';
 import { LlmModule } from './module/llm/llm.module';
+import { MessageModule } from './module/message/message.module';
+import { ConversationModule } from './module/conversation/conversation.module';
+import { AppGateway } from './app.gateway';
 
 @Module({
   imports: [
@@ -18,8 +21,10 @@ import { LlmModule } from './module/llm/llm.module';
     PromptModule,
     UserModule,
     PassportModule.register({ session: true }),
+    MessageModule,
+    ConversationModule,
   ],
   controllers: [],
-  providers: [],
+  providers: [AppGateway],
 })
 export class AppModule {}

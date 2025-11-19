@@ -1,18 +1,19 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { FacebookApiService } from './facebookApi.service';
-import { PostMessage, WabaHook } from 'src/module/model/waba.model';
+import { PostMessage, WabaHook } from 'src/model/waba.model';
 import { ValidationService } from 'src/module/common/validation.service';
-import { IntegrationsValidation } from '../dto/Integration.validation';
 import { PrismaService } from 'src/module/common/prisma.service';
-import { GroqService } from 'src/module/llm/LlmService/groq.service';
+import { AiService } from 'src/module/aiWrapper/service/aiWrapper.service';
+import { ConversationWrapper } from 'src/model/aiWrapper';
+import { IntegrationsValidation } from '../../dto/Integration.validation';
 
 @Injectable()
-export class wabaService {
+export class WabaService {
   constructor(
     private facebookApiService: FacebookApiService,
     private validationService: ValidationService,
     private prismaService: PrismaService,
-    private groqService: GroqService,
+    private aiService: AiService,
   ) {}
 
   async sendMessage(req: WabaHook) {
@@ -32,14 +33,31 @@ export class wabaService {
 
     if (!findWabaAccount) throw new HttpException('Unauthorized', 400);
 
-    const aiResponse = await this.groqService.createCompletions(req.text);
+    const findWaba = await this.prismaService.bot.findFirst({
+      where: {
+        numberPhoneWaba: HookValid.numberPhoneId,
+        type: 'whatsapp',
+        is_active: true,
+      },
+    });
 
-    const data: PostMessage = {
+    if (!findWaba) return;
+    const data: ConversationWrapper = {
+      room: `${HookValid.numberPhoneId}${HookValid.from}`,
+      botId: String(findWaba?.id),
+      integrationType: 'waba',
+      message: HookValid.text,
+    };
+
+    const aiResponse = await this.aiService.wrapper(data);
+
+    const message: PostMessage = {
       type: 'text',
       message: String(aiResponse),
-      numberPhoneId: req.numberPhoneId,
+      numberPhoneId: String(findWaba.numberPhoneWaba),
       to: HookValid.from,
+      accessToken: String(findWaba.data),
     };
-    this.facebookApiService.PostMessage(data);
+    this.facebookApiService.PostMessage(message);
   }
 }

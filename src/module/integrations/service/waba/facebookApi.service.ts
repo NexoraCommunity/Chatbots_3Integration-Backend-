@@ -1,7 +1,7 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
-import { PostMessage } from 'src/module/model/waba.model';
+import { PostMessage } from 'src/model/waba.model';
 
 @Injectable()
 export class FacebookApiService {
@@ -38,7 +38,7 @@ export class FacebookApiService {
   }
 
   async PostMessage(req: PostMessage) {
-    const accessToken = this.configService.get('ACCESS_TOKEN_PERMANENT');
+    const accessToken = req.accessToken;
     try {
       const body = {
         messaging_product: 'whatsapp',

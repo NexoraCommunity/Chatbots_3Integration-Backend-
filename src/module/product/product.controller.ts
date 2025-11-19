@@ -10,7 +10,7 @@ import {
   Res,
 } from '@nestjs/common';
 import type { Request, Response } from 'express';
-import { WebResponse } from '../model/web.model';
+import { WebResponse } from 'src/model/web.model';
 
 @Controller('api')
 export class UserController {}

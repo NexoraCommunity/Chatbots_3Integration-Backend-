@@ -8,7 +8,7 @@ import {
   PaginationResponsePrompt,
   postPrompt,
   PromptApi,
-} from 'src/module/model/prompt.model';
+} from 'src/model/prompt.model';
 import { PromptValidation } from '../dto/prompt.validation';
 
 @Injectable()

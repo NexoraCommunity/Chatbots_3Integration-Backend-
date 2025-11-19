@@ -119,15 +119,16 @@ model Prompt {
 }
 
 model Bot {
-  id        String   @id @default(uuid())
-  userId    String   @default(uuid())
-  promptId  String   @default(uuid())
-  bot_name  String   @db.VarChar(100)
-  is_active Boolean? @default(false)
-  type      String   @db.VarChar(50)
-  dataType  String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id              String   @id @default(uuid())
+  userId          String   @default(uuid())
+  promptId        String   @default(uuid())
+  bot_name        String   @db.VarChar(100)
+  is_active       Boolean? @default(false)
+  type            String   @db.VarChar(50)
+  data            String?
+  numberPhoneWaba String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   user         User           @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   prompt       Prompt         @relation(fields: [promptId], references: [id], onDelete: Cascade, onUpdate: Cascade)
@@ -137,12 +138,13 @@ model Bot {
 }
 
 model Conversation {
-  id        String    @id @default(uuid())
-  botId     String    @default(uuid())
-  room      String?   @db.VarChar(100)
-  messages  Message[]
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  id              String    @id @default(uuid())
+  botId           String    @default(uuid())
+  room            String    @db.VarChar(100)
+  integrationType String    @db.VarChar(100)
+  messages        Message[]
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 
   bot Bot @relation(fields: [botId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
@@ -153,7 +155,8 @@ model Message {
   id             String   @id @default(uuid())
   conversationId String   @default(uuid())
   message        String
-  type           String?  @db.VarChar(50)
+  sentiment      String   @default("neutral")
+  type           String   @db.VarChar(50)
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 

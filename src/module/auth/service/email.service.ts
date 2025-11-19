@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import * as nodemailer from 'nodemailer';
-import { EmailConfig } from 'src/module/model/user.model';
+import { EmailConfig } from 'src/model/user.model';
 import { Logger } from 'winston';
 
 @Injectable()

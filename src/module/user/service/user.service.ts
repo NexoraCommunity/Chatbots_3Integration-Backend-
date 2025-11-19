@@ -6,7 +6,7 @@ import {
   PostCurrentUser,
   UpdatePassworduser,
   VerifPassword,
-} from 'src/module/model/user.model';
+} from 'src/model/user.model';
 import { userValidation } from '../dto/user.validation';
 import { EmailService } from 'src/module/auth/service/email.service';
 import bcrypt from 'bcrypt';

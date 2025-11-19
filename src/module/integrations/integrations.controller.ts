@@ -1,11 +1,11 @@
 import { Body, Controller, Get, Post, Query, Res } from '@nestjs/common';
 
 import type { Response } from 'express';
-import { wabaService } from './whatsaap/waba.service';
+import { WabaService } from './service/waba/waba.service';
 
 @Controller('/auth')
 export class IntegrationsController {
-  constructor(private wabaService: wabaService) {}
+  constructor(private wabaService: WabaService) {}
 
   @Get('/waba/callback')
   verifyWebhook(

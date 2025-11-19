@@ -10,7 +10,7 @@ import {
   RegisterUserRequest,
   UserResponse,
   VerificationRequest,
-} from 'src/module/model/user.model';
+} from 'src/model/user.model';
 import { UserValidation } from '../dto/user.validation';
 import { JwtService } from '../service/jwt.service';
 import { EmailService } from '../service/email.service';

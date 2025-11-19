@@ -1,8 +1,8 @@
 import { PrismaService } from 'src/module/common/prisma.service';
-import { FacebookOauth } from 'src/module/model/user.model';
+import { FacebookOauth } from 'src/model/user.model';
 import { JwtService } from './jwt.service';
 import { HttpException, Injectable } from '@nestjs/common';
-import { FacebookApiService } from 'src/module/integrations/whatsaap/facebookApi.service';
+import { FacebookApiService } from 'src/module/integrations/service//waba/facebookApi.service';
 import bcrypt from 'bcrypt';
 
 @Injectable()
