@@ -125,7 +125,7 @@ model Bot {
   bot_name        String   @db.VarChar(100)
   is_active       Boolean? @default(false)
   type            String   @db.VarChar(50)
-  data            String?
+  data            String?  @db.VarChar(700)
   numberPhoneWaba String?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
@@ -156,7 +156,8 @@ model Message {
   conversationId String   @default(uuid())
   message        String
   sentiment      String   @default("neutral")
-  type           String   @db.VarChar(50)
+  type           String   @db.VarChar(100)
+  role           String
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 

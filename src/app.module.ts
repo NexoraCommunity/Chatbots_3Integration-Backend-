@@ -10,6 +10,7 @@ import { LlmModule } from './module/llm/llm.module';
 import { MessageModule } from './module/message/message.module';
 import { ConversationModule } from './module/conversation/conversation.module';
 import { AppGateway } from './app.gateway';
+import { AiWrapperModule } from './module/aiWrapper/aiWrapper.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { AppGateway } from './app.gateway';
     AuthModule,
     PromptModule,
     UserModule,
+    AiWrapperModule,
     PassportModule.register({ session: true }),
     MessageModule,
     ConversationModule,

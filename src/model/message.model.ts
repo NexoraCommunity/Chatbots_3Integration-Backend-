@@ -5,18 +5,21 @@ export class MessageApi {
   conversationId: string;
   message: string;
   type: string;
+  role: string;
 }
 
 export class PostMessage {
   conversationId: string;
   type: string;
   message: string;
+  role: string;
 }
 export class ChangeMessage {
   id: string;
   type: string;
   message: string;
   sentiment: string;
+  role: string;
 }
 
 export class GetModelMessage {

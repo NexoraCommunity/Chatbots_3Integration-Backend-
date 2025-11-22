@@ -36,7 +36,6 @@ export class IntegrationsController {
             const message = value.messages[0];
             const from = message.from;
             const text = message.text?.body;
-
             this.wabaService.sendMessage({ from, text, wabaId, numberPhoneId });
           }
         });

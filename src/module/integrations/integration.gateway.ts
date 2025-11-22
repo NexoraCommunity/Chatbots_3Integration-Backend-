@@ -16,7 +16,8 @@ export class integrationGateway {
 
   @SubscribeMessage('disableBot')
   async disableBot(client: Socket, req: startBot) {
-    const data = await this.integrationService.disableBot();
-    client.emit('bot', data);
+    this.integrationService.disableBot(req, (update) => {
+      client.emit('bot', update);
+    });
   }
 }

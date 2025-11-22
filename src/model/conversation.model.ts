@@ -9,8 +9,7 @@ export class ConversationApi {
 
 export class PostConversation {
   botId: string;
-  client1: string;
-  client2: string;
+  room: string;
   integrationType: string;
 }
 export class ChangeConversation {

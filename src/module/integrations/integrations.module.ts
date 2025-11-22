@@ -11,9 +11,16 @@ import { ConversationModule } from '../conversation/conversation.module';
 import { AiWrapperModule } from '../aiWrapper/aiWrapper.module';
 import { integrationGateway } from './integration.gateway';
 import { Integrationservice } from './service/integration.service';
+import { BotModule } from '../bot/bot.module';
 
 @Module({
-  imports: [LlmModule, MessageModule, ConversationModule, AiWrapperModule],
+  imports: [
+    LlmModule,
+    MessageModule,
+    ConversationModule,
+    AiWrapperModule,
+    BotModule,
+  ],
   controllers: [IntegrationsController],
   providers: [
     FacebookApiService,

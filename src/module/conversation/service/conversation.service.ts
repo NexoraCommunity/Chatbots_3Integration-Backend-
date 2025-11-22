@@ -93,7 +93,7 @@ export class ConversationService {
     }
   }
 
-  async addNewConversation(req: PostConversation): Promise<ConversationApi> {
+  async addNewConversation(req: PostConversation): Promise<Conversation> {
     const ConversationValid: PostConversation = this.validationService.validate(
       ConversationValidation.Conversation,
       req,
@@ -103,7 +103,7 @@ export class ConversationService {
 
     const checkRoom = await this.prismaService.conversation.findFirst({
       where: {
-        room: `${ConversationValid.client1}${ConversationValid.client2}`,
+        room: ConversationValid.room,
       },
     });
 
@@ -112,17 +112,12 @@ export class ConversationService {
     const data = await this.prismaService.conversation.create({
       data: {
         ...ConversationValid,
-        room: `${ConversationValid.client1}${ConversationValid.client2}`,
+        integrationType: req.integrationType,
+        room: ConversationValid.room,
       },
     });
 
-    const res: ConversationApi = {
-      botId: data.botId,
-      integrationType: data.integrationType,
-      room: data.room,
-    };
-
-    return res;
+    return data;
   }
 
   async editConversation(req: ChangeConversation) {

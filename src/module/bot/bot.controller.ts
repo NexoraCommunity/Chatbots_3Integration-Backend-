@@ -13,7 +13,7 @@ import { WebResponse } from 'src/model/web.model';
 import { BotApi, GetModelbot, postBot } from 'src/model/bot.model';
 import { Bot } from '@prisma/client';
 import { BotService } from './service/bot.service';
-@Controller('')
+@Controller('api')
 export class BotController {
   constructor(private botService: BotService) {}
 

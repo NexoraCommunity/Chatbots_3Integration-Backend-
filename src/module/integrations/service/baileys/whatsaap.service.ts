@@ -1,12 +1,18 @@
-import { HttpException, Injectable, OnModuleInit } from '@nestjs/common';
-import makeWASocket, { DisconnectReason, useMultiFileAuthState } from 'baileys';
+import { Injectable, OnModuleInit } from '@nestjs/common';
+import makeWASocket, {
+  DisconnectReason,
+  ConnectionState,
+  BaileysEventMap,
+} from 'baileys';
 import * as qrcode from 'qrcode';
 import * as qrcodeT from 'qrcode-terminal';
 import { WhatsappAuthService } from './session.service';
 import { PrismaService } from 'src/module/common/prisma.service';
 import { AiService } from 'src/module/aiWrapper/service/aiWrapper.service';
 import { ConversationWrapper } from 'src/model/aiWrapper';
-import { ResponseBot } from 'src/model/bot.model';
+import { BotService } from 'src/module/bot/service/bot.service';
+
+type MessagesUpsert = BaileysEventMap['messages.upsert'];
 
 @Injectable()
 export class BaileysService implements OnModuleInit {
@@ -14,15 +20,19 @@ export class BaileysService implements OnModuleInit {
     private whatsappAuth: WhatsappAuthService,
     private prismaService: PrismaService,
     private aiService: AiService,
+    private botService: BotService,
   ) {}
 
   private bots = new Map<string, any>();
+  private botCallbacks = new Map<string, (data: any) => void>();
+  private forceStop = new Map<string, boolean>();
 
   async onModuleInit() {
     const botActives = await this.prismaService.bot.findMany({
       where: {
         is_active: true,
         type: 'whatsapp',
+        numberPhoneWaba: null,
       },
     });
 
@@ -31,13 +41,22 @@ export class BaileysService implements OnModuleInit {
     });
   }
 
+  // Function to start and create new connection baileys
   async startBot(botId: string, sendUpdate?: (data: any) => void) {
+    if (sendUpdate) {
+      this.botCallbacks.set(botId, sendUpdate);
+    }
+    const cb = this.botCallbacks.get(botId);
     try {
       if (this.bots.has(botId)) {
-        console.log(`[${botId}] Bot sedang aktif`);
-        sendUpdate?.({ message: '⚠️  Bot Sedang Aktif', botId: botId });
+        cb?.({
+          message: 'Bot Connected To Whatsapp',
+          type: 'whatsapp',
+          botId: botId,
+        });
         return;
       }
+
       const { state, saveCreds } =
         await this.whatsappAuth.useDatabaseAuthState(botId);
 
@@ -47,61 +66,72 @@ export class BaileysService implements OnModuleInit {
         shouldSyncHistoryMessage: (msg) => false,
       });
 
-      sock.ev.on('connection.update', async (update) => {
+      // Function Connection Whatsapp Baileys
+      const connectionUpdate = async (update: ConnectionState) => {
         const { connection, lastDisconnect, qr } = update;
         if (qr) {
           const QrCode = await qrcode.toDataURL(qr, { type: 'image/png' });
           qrcodeT.generate(qr, { small: true });
-          sendUpdate?.({
+          cb?.({
             message: 'QrCode Generated',
             qrCode: QrCode,
             type: 'whatsapp',
             botId: botId,
           });
-          return;
         }
         if (connection === 'open') {
           this.bots.set(botId, sock);
-          sendUpdate?.({
-            message: 'Bot Connected to whatsapp',
+          cb?.({
+            message: 'Bot Connected To Whatsapp',
             type: 'whatsapp',
             botId: botId,
           });
-          return;
+          await this.botService.updateBotStatus(
+            { botId: botId, type: 'whatsapp' },
+            true,
+          );
         } else if (connection === 'close') {
           const statusCode = (lastDisconnect?.error as any)?.output?.statusCode;
           const shouldReconnect = statusCode !== DisconnectReason.loggedOut;
 
           if (shouldReconnect) {
-            console.log(`[${botId}] 🔁 Reconnect...`);
+            if (this.forceStop.get(botId)) {
+              console.log(
+                `[${botId}] ❌ Reconnect dibatalkan karena forceStop`,
+              );
+              this.forceStop.delete(botId);
+              return;
+            }
 
             setTimeout(() => {
               this.startBot(botId);
             }, 5000);
           } else {
-            console.log(`[${botId}] Logout total, perlu scan ulang`);
-            await this.logOut(botId);
-            sendUpdate?.({
+            this.forceStop.delete(botId);
+
+            cb?.({
               message: `[${botId}] Logout total, perlu scan ulang. refresh halaman untuk generate qrCode`,
               type: 'whatsapp',
               botId: botId,
             });
-            return;
+            await this.logOut(botId);
           }
         }
-      });
+      };
 
-      sock.ev.on('creds.update', async () => {
+      // Function Save Session Baileys
+      const credsUpdate = async () => {
         await saveCreds();
         if (this.bots.get(botId)) return;
         sendUpdate?.({
-          message: 'QR berhasil discan. please refresh page!!',
+          message: 'QR berhasil discan. Connecting...',
           botId: botId,
           type: 'whatsapp',
         });
-      });
+      };
 
-      sock.ev.on('messages.upsert', async (msg) => {
+      // Function Catch MessageUpdate Baileys
+      const messageUpsert = async (msg: MessagesUpsert) => {
         try {
           const m = msg.messages[0];
           if (!m.message) return;
@@ -133,32 +163,57 @@ export class BaileysService implements OnModuleInit {
         } catch (err: any) {
           if (err.message?.includes('No session found to decrypt message')) {
             console.warn('⚠️ Pesan tidak bisa didekripsi, lewati.');
-            return;
           }
           console.error('❌ Error saat memproses pesan:', err);
         }
-      });
+      };
+
+      // ------ Sequence code run here ------
+
+      // Socket and Event Baileys
+      sock.ev.on('connection.update', connectionUpdate);
+      sock.ev.on('creds.update', credsUpdate);
+      sock.ev.on('messages.upsert', messageUpsert);
+
+      // ------ End Sequence ------
     } catch (err) {
-      sendUpdate?.({
+      cb?.({
         message: `Cannot StartBot Because: ${err}`,
         botId: botId,
         type: 'whatsapp',
       });
-      return;
     }
   }
 
-  async disableBot(botId: string) {
+  // Function to disbale connection baileys
+  async disableBot(botId: string, sendUpdate?: (data: any) => void) {
+    this.forceStop.set(botId, true);
+
     const sock = this.bots.get(botId);
     if (sock) {
       await sock.ws.close();
+      await sock.ev.removeAllListeners();
+      sendUpdate?.({
+        message: 'Bot Disconnected to Whatsapp',
+        botId: botId,
+        type: 'whatsapp',
+      });
       this.bots.delete(botId);
+
+      await this.botService.updateBotStatus(
+        { botId: botId, type: 'whatsapp' },
+        false,
+      );
     }
-    console.log(`[${botId}] 🔌 Bot dinonaktifkan`);
   }
 
+  // Function to handle when user delete session scan
   async logOut(botId: string) {
     this.bots.delete(botId);
+    await this.botService.updateBotStatus(
+      { botId: botId, type: 'whatsapp' },
+      false,
+    );
     await this.prismaService.whatsappSession.delete({
       where: {
         id: botId,

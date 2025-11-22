@@ -144,20 +144,6 @@ export class BotService {
     }
   }
 
-  async startBot(req: startBot) {
-    const BotValid: startBot = this.validationService.validate(
-      BotValidation.StartBot,
-      req,
-    );
-    if (!BotValid) throw new HttpException('Validation Error', 400);
-    const bot = await this.prismaService.bot.findFirst({
-      where: {
-        id: BotValid.botId,
-      },
-    });
-
-    if (!bot) throw new HttpException('Bot id not Found!!', 400);
-  }
   async deleteBot(id: string) {
     if (!id) throw new HttpException('Validation Error', 400);
 
@@ -171,5 +157,18 @@ export class BotService {
     } catch (error) {
       throw new HttpException('BotId is Invalid', 400);
     }
+  }
+
+  async updateBotStatus(req: startBot, status: boolean) {
+    await this.prismaService.bot.update({
+      where: {
+        id: req.botId,
+      },
+      data: {
+        is_active: status,
+        data: req.data,
+        numberPhoneWaba: req.numberPhoneWaba,
+      },
+    });
   }
 }

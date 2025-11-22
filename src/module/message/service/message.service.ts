@@ -111,6 +111,7 @@ export class MessageService {
       message: data.message,
       conversationId: data.conversationId,
       type: data.type,
+      role: data.role,
     };
 
     return res;
@@ -135,6 +136,7 @@ export class MessageService {
         message: data.message,
         conversationId: data.conversationId,
         type: data.type,
+        role: data.role,
       };
       return res;
     } catch (error) {
