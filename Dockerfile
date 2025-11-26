@@ -1,31 +1,29 @@
-# Use Node.js base image
 FROM node:20-alpine
 
-# Set working directory
 WORKDIR /app
 
 # Copy package.json & package-lock.json
 COPY package*.json ./
 
-# Install dependencies
+# Install dependencies → akan dicache
 RUN npm install
+
+# Copy Prisma folder dulu agar prisma generate tidak error
+COPY prisma ./prisma
+
+# Generate Prisma Client
+RUN npx prisma generate
 
 # Copy source code
 COPY . .
 
-
-# Prisma Migrate database client
-RUN npx prisma migrate deploy
-
-# Generate Prisma client
-RUN npx prisma generate
-
-
-# Build The app
+# Build NestJS
 RUN npm run build
 
-# Expose NestJS default port
+# Copy entrypoint script
+COPY entrypoint.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
+
 EXPOSE 8080
 
-# Start the app
-CMD ["npm", "run", "start:prod"]
+CMD ["/app/entrypoint.sh"]
