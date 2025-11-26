@@ -3,7 +3,7 @@
 
 ## Credential Strategy
 ### Register User
-**Endpoint : POST /api/auth/register**
+**Endpoint : POST /auth/register**
 
 Request Body : 
 
@@ -53,7 +53,7 @@ Response Body :
 ---
 
 ### Login User
-**Endpoint : POST /api/auth/login**
+**Endpoint : POST /auth/login**
 
 Request Body : 
 
@@ -96,7 +96,7 @@ data:{
 
 ---
 ### Verification User
-**Endpoint : POST /api/auth/otp-verification**
+**Endpoint : POST /auth/otp-verification**
 
 Request Body : 
 
@@ -142,7 +142,7 @@ Response Body :
 ---
 
 ### Generate NewAccessToken
-**Endpoint : POST /api/auth/refresh**
+**Endpoint : POST /auth/refresh**
 
 Request Header : 
 

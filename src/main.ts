@@ -7,6 +7,12 @@ import { JwtFilter } from './filter/jwt.filter';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  app.enableCors({
+    origin: [process.env.FRONTEND],
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    credentials: true,
+  });
+
   app.useGlobalFilters(new ValidationFilter());
   app.useGlobalFilters(new HttpFilter());
   app.useGlobalFilters(new JwtFilter());

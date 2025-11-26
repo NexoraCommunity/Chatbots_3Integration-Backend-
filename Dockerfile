@@ -16,8 +16,12 @@ COPY . .
 # Generate Prisma client
 RUN npx prisma generate
 
+
+# Build The app
+RUN npm run build
+
 # Expose NestJS default port
 EXPOSE 8080
 
 # Start the app
-CMD ["npm", "run", "start:dev"]
+CMD ["npm", "run", "start:prod"]
