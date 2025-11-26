@@ -106,7 +106,6 @@ export class AuthController {
   }
 
   @Get('google/redirect')
-  @HttpCode(200)
   @UseGuards(GoogleOauthGuard)
   async handleRedirectGoogle(@Req() req, @Res() res) {
     const response = await this.prismaService.account.findFirst({
