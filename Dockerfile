@@ -13,6 +13,10 @@ RUN npm install
 # Copy source code
 COPY . .
 
+
+# Prisma Migrate database client
+RUN npx prisma migrate deploy
+
 # Generate Prisma client
 RUN npx prisma generate
 
