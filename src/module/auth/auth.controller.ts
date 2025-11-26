@@ -118,12 +118,11 @@ export class AuthController {
     res.cookie('access_token', token, {
       httpOnly: true,
       secure: true,
-      sameSite: 'none',
+      sameSite: 'lax',
       maxAge: 1000 * 60 * 60 * 24,
     });
 
-    // redirect ke frontend tanpa token di URL
-    return res.redirect(`${this.configService.get('FRONTEND')}/dashboard`);
+    return res.redirect(`http://localhost:3001/dashboard`);
   }
 
   @Get('facebook/login')
