@@ -25,11 +25,13 @@ import {
 } from 'src/model/user.model';
 import { WebResponse } from 'src/model/web.model';
 import { CookieInterceptor } from 'src/interceptors/cookies.interceptors';
+import { ConfigService } from '@nestjs/config';
 
 @Controller('/auth')
 export class AuthController {
   constructor(
     private prismaService: PrismaService,
+    private configService: ConfigService,
     private jwtService: JwtService,
     private creadentialStrategy: CredentialStrategy,
   ) {}
@@ -121,7 +123,7 @@ export class AuthController {
     });
 
     // redirect ke frontend tanpa token di URL
-    return res.redirect('http://localhost:3001/dashboard');
+    return res.redirect(`${this.configService.get('FRONTEND')}/dashboard`);
   }
 
   @Get('facebook/login')
