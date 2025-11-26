@@ -173,6 +173,7 @@ data:{
     "error":"resfreshToken is invalid!!",
 }
 ```
+----
 
 
 ## Google OAuth
@@ -187,8 +188,39 @@ Response Redirect : /api/auth/google/redirect
 Response Cookie :
 ```json
 "accessToken":"akwoekpaeonfvbifnoguork",
+"refreshToken":"akwoekpaeonfvbifnoguork",
+
 ```
 
+---
+## Facebook OAuth
+### Show Google Popup Login
+**Endpoint : GET /api/auth/facebook/login**
+
+Response Redirect : /api/auth/facebook/redirect
+
+### Set accessToken to Cookie
+**Endpoint : GET /api/auth/facebook/redirect**
+
+Response Cookie :
+```json
+"accessToken":"akwoekpaeonfvbifnoguork",
+"refreshToken":"akwoekpaeonfvbifnoguork",
+```
+
+### Connect Facebook if user loggedIN
+**Endpoint : GET /api/auth/facebook/login?userId={aowokwokowk}**
+
+Response Redirect : /api/auth/facebook/redirect
+
+### Set accessToken to Cookie
+**Endpoint : GET /api/auth/facebook/redirect**
+
+Response Cookie :
+```json
+"accessToken":"akwoekpaeonfvbifnoguork",
+"refreshToken":"akwoekpaeonfvbifnoguork",
+```
 
 
 
@@ -270,7 +302,7 @@ Response Body :
 
 ---
 
-## Logout User
+## Delete User
 **Endpoint : DELETE /api/users/current**
 
 
