@@ -3,6 +3,7 @@ import { PrismaService } from 'src/module/common/prisma.service';
 import { ValidationService } from 'src/module/common/validation.service';
 import {
   BotApi,
+  botStatus,
   changeBot,
   GetModelbot,
   PaginationResponseBot,
@@ -106,12 +107,7 @@ export class BotService {
       data: BotValid,
     });
 
-    const res: BotApi = {
-      bot_name: data.bot_name,
-      promptId: data.promptId,
-      type: data.type,
-      userId: data.userId,
-    };
+    const res: Bot = data;
 
     return res;
   }
@@ -131,12 +127,7 @@ export class BotService {
         data: BotValid,
       });
 
-      const res: BotApi = {
-        bot_name: data.bot_name,
-        promptId: data.promptId,
-        userId: data.userId,
-        type: data.type,
-      };
+      const res: Bot = data;
       return res;
     } catch (error) {
       if (String(error).includes('invalid_type')) throw error;
@@ -159,7 +150,7 @@ export class BotService {
     }
   }
 
-  async updateBotStatus(req: startBot, status: boolean) {
+  async updateBotStatus(req: botStatus, status: boolean) {
     await this.prismaService.bot.update({
       where: {
         id: req.botId,

@@ -5,7 +5,7 @@ generator client {
 
 datasource db {
   provider = "mysql"
-  url      = env("DATABASE_URL")
+  // url      = env("DATABASE_URL")
 }
 
 model User {
@@ -22,6 +22,7 @@ model User {
   userOtp                  UserOtp[]
   product                  Product[]
   category                 Category[]
+  userSubcription          UserSubcribtion[]
   createdAt                DateTime                   @default(now())
   updatedAt                DateTime                   @updatedAt
   WhatsaapBussinessAccount WhatsaapBussinessAccount[]
@@ -42,9 +43,40 @@ model Account {
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  user User @relation(fields: [userId], references: [id], onUpdate: Cascade)
 
   @@map("Account")
+}
+
+model UserSubcribtion {
+  id        String   @id @default(uuid())
+  userId    String   @default(uuid())
+  startDate DateTime
+  endDate   DateTime
+  user      User     @relation(fields: [userId], references: [id], onUpdate: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("UserSubcribtion")
+}
+
+model Subscribtion {
+  id           Int       @id @default(autoincrement())
+  name         String
+  price        Float     @db.Float()
+  durationDays String
+  feature      Feature[]
+
+  @@map("Subcribtion")
+}
+
+model Feature {
+  id            Int    @id @default(autoincrement())
+  featureName   String @db.VarChar(255)
+  subcribtionId Int
+
+  subcribtion Subscribtion @relation(fields: [subcribtionId], references: [id], onUpdate: Cascade)
 }
 
 model WhatsappSession {
@@ -76,7 +108,7 @@ model WhatsaapBussinessAccount {
   displayName String        @db.VarChar(100)
   email       String?       @db.VarChar(100)
   businessId  String        @db.VarChar(255)
-  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  user        User          @relation(fields: [userId], references: [id], onUpdate: Cascade)
   numberPhone NumberPhone[]
 
   @@map("WhatsaapBussinessAccount")
@@ -86,7 +118,7 @@ model NumberPhone {
   id                         String                   @id @default(uuid())
   numberPhoneId              String
   whatsaapBussinessAccountId String                   @default(uuid())
-  WhatsaapBussinessAccount   WhatsaapBussinessAccount @relation(fields: [whatsaapBussinessAccountId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  WhatsaapBussinessAccount   WhatsaapBussinessAccount @relation(fields: [whatsaapBussinessAccountId], references: [id], onUpdate: Cascade)
 
   @@map("NumberPhone")
 }
@@ -99,7 +131,7 @@ model UserOtp {
   expiresAt DateTime
   createdAt DateTime @default(now())
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  user User @relation(fields: [userId], references: [id], onUpdate: Cascade)
 
   @@map("UserOTP")
 }
@@ -112,7 +144,7 @@ model Prompt {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user User  @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  user User  @relation(fields: [userId], references: [id], onUpdate: Cascade)
   bot  Bot[]
 
   @@map("Prompt")
@@ -126,12 +158,15 @@ model Bot {
   is_active       Boolean? @default(false)
   type            String   @db.VarChar(50)
   data            String?  @db.VarChar(700)
+  llm             String   @db.VarChar(100)
+  model           String   @db.VarChar(100)
   numberPhoneWaba String?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
-  user         User           @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  prompt       Prompt         @relation(fields: [promptId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  user         User           @relation(fields: [userId], references: [id], onUpdate: Cascade)
+  prompt       Prompt         @relation(fields: [promptId], references: [id], onUpdate: Cascade)
+  order        Order[]
   conversation Conversation[]
 
   @@map("BOT")
@@ -146,7 +181,7 @@ model Conversation {
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 
-  bot Bot @relation(fields: [botId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  bot Bot @relation(fields: [botId], references: [id], onUpdate: Cascade)
 
   @@map("Conversation")
 }
@@ -155,13 +190,12 @@ model Message {
   id             String   @id @default(uuid())
   conversationId String   @default(uuid())
   message        String
-  sentiment      String   @default("neutral")
   type           String   @db.VarChar(100)
   role           String
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
-  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  conversation Conversation @relation(fields: [conversationId], references: [id], onUpdate: Cascade)
 
   @@map("Message")
 }
@@ -174,13 +208,14 @@ model Product {
   price       Float     @db.Float()
   stock       Int
   weight      Float     @db.Float()
-  image       String    @db.VarChar(225)
+  image       String    @db.VarChar(500)
   variant     Variant[]
   sku         String
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  orderItem OrderItem[]
+  user      User        @relation(fields: [userId], references: [id], onUpdate: Cascade)
 
   @@map("Product")
 }
@@ -192,7 +227,7 @@ model Category {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  user User @relation(fields: [userId], references: [id], onUpdate: Cascade)
 
   @@map("Category")
 }
@@ -202,12 +237,86 @@ model Variant {
   productId       String   @default(uuid())
   name            String   @db.VarChar(100)
   value           String   @db.VarChar(100)
-  image           String
+  image           String   @db.VarChar(500)
   priceAdjustment Float    @db.Float()
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
-  product Product @relation(fields: [productId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  product Product @relation(fields: [productId], references: [id], onUpdate: Cascade)
 
   @@map("Variant")
+}
+
+model Customer {
+  id              String @id @default(uuid())
+  fullname        String @db.VarChar(200)
+  phone           String @db.VarChar(100)
+  email           String @db.VarChar(100)
+  address         String @db.VarChar(1000)
+  status          String @db.VarChar(50)
+  tag             String @db.VarChar(50)
+  integrationType String @db.VarChar(50)
+
+  customerNote CustomerNote[]
+  order        Order[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("Customer")
+}
+
+model CustomerNote {
+  id         Int    @id @default(autoincrement())
+  customerId String @default(uuid())
+  content    String @db.VarChar(1000)
+
+  createdAt DateTime @default(now())
+  customer  Customer @relation(fields: [customerId], references: [id], onUpdate: Cascade)
+  updatedAt DateTime @updatedAt
+
+  @@map("CustomerNote")
+}
+
+model Order {
+  id          String   @id @default(uuid())
+  customerId  String   @default(uuid())
+  botId       String   @default(uuid())
+  status      String   @db.VarChar(50)
+  totalAmount Int
+  createdAt   DateTime @default(now())
+
+  transaction Transaction[]
+  orderitems  OrderItem[]
+  customer    Customer      @relation(fields: [customerId], references: [id], onUpdate: Cascade)
+  bot         Bot           @relation(fields: [botId], references: [id], onUpdate: Cascade)
+
+  @@map("Order")
+}
+
+model Transaction {
+  id            String   @id @default(uuid())
+  orderId       String   @default(uuid())
+  amount        Int
+  status        String   @db.VarChar(50)
+  transactionId String   @db.VarChar(225)
+  createdAt     DateTime @default(now())
+
+  order Order @relation(fields: [orderId], references: [id], onUpdate: Cascade)
+
+  @@map("Transaction")
+}
+
+model OrderItem {
+  id        String   @id @default(uuid())
+  orderId   String   @default(uuid())
+  productId String   @default(uuid())
+  quantity  Int
+  price     Float
+  createdAt DateTime @default(now())
+
+  order   Order   @relation(fields: [orderId], references: [id], onUpdate: Cascade)
+  product Product @relation(fields: [productId], references: [id], onUpdate: Cascade)
+
+  @@map("OrderItem")
 }

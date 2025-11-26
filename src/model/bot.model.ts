@@ -5,6 +5,8 @@ export class BotApi {
   userId: string;
   promptId: string;
   bot_name: string;
+  llm: string;
+  model: string;
   type: string;
 }
 
@@ -12,9 +14,20 @@ export class changeBot {
   id: string;
   userId: string;
   promptId: string;
+  llm: string;
+  model: string;
   bot_name: string;
 }
 export class startBot {
+  botId: string;
+  type: string;
+  data?: string;
+  numberPhoneWaba?: string;
+  llm: string;
+  model: string;
+}
+
+export class botStatus {
   botId: string;
   type: string;
   data?: string;
@@ -32,6 +45,8 @@ export class postBot {
   promptId: string;
   bot_name: string;
   type: string;
+  llm: string;
+  model: string;
 }
 
 export class GetModelbot {

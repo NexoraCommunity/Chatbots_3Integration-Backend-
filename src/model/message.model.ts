@@ -18,7 +18,6 @@ export class ChangeMessage {
   id: string;
   type: string;
   message: string;
-  sentiment: string;
   role: string;
 }
 
