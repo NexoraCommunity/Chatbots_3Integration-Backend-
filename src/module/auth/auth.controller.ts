@@ -119,12 +119,9 @@ export class AuthController {
       httpOnly: true,
       secure: true,
       sameSite: 'none',
-      maxAge: 1000 * 60 * 60 * 24,
     });
-
-    return res.redirect(
-      `${this.configService.get('FRONTEND') || 'http://localhost:3001'}/dashboard`,
-    );
+    return res.send(`
+    <html> <body> <script> window.location.href = "${this.configService.get('FRONTEND')}/dashboard"; </script> </body> </html> `);
   }
 
   @Get('facebook/login')
