@@ -118,11 +118,13 @@ export class AuthController {
     res.cookie('access_token', token, {
       httpOnly: true,
       secure: true,
-      sameSite: 'lax',
+      sameSite: 'none',
       maxAge: 1000 * 60 * 60 * 24,
     });
 
-    return res.redirect(`http://localhost:3001/dashboard`);
+    return res.redirect(
+      `${this.configService.get('FRONTEND') || 'http://localhost:3001'}/dashboard`,
+    );
   }
 
   @Get('facebook/login')
