@@ -116,12 +116,15 @@ export class AuthController {
     const token = response?.accessToken;
 
     res.cookie('access_token', token, {
-      httpOnly: true,
+      httpOnly: false,
       secure: true,
       sameSite: 'none',
+      maxAge: 1000 * 60 * 60 * 24,
     });
-    return res.send(`
-    <html> <body> <script> window.location.href = "${this.configService.get('FRONTEND')}/dashboard"; </script> </body> </html> `);
+
+    return res.redirect(
+      `${this.configService.get || 'http://localhost:3001/dashboard'}`,
+    );
   }
 
   @Get('facebook/login')
