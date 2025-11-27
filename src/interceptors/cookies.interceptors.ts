@@ -18,15 +18,15 @@ export class CookieInterceptor implements NestInterceptor {
         if (data?.data.accessToken && data?.data.refreshToken) {
           response.cookie('access_token', data.data.accessToken, {
             httpOnly: true,
-            secure: false,
-            sameSite: 'lax',
+            secure: true,
+            sameSite: 'none',
             maxAge: 15 * 60 * 1000,
           });
 
           response.cookie('refresh_token', data.data.refreshToken, {
             httpOnly: true,
-            secure: false,
-            sameSite: 'lax',
+            secure: true,
+            sameSite: 'none',
             maxAge: 7 * 24 * 60 * 60 * 1000,
           });
         }

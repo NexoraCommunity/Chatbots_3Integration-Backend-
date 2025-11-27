@@ -10,7 +10,7 @@ export class AuthMiddleware implements NestMiddleware {
     private prismaService: PrismaService,
   ) {}
   async use(req: Request, res: Response, next: NextFunction) {
-    const token = req.headers['authorization'];
+    const token = req.cookies.access_token;
 
     if (!token) throw new HttpException('Unauthorized!!', 401);
 

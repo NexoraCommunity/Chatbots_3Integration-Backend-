@@ -80,7 +80,7 @@ export class AuthController {
   @Get('refresh')
   @HttpCode(200)
   async refresh(@Req() req: Request, @Res() res: Response) {
-    const refreshToken = req.headers['authorization'];
+    const refreshToken = req.cookies.refresh_token;
 
     const accessToken = await this.creadentialStrategy.refreshAccessToken(
       String(refreshToken),
@@ -90,8 +90,8 @@ export class AuthController {
       .status(200)
       .cookie('access_token', accessToken, {
         httpOnly: true,
-        secure: false,
-        sameSite: 'lax',
+        secure: true,
+        sameSite: 'none',
         maxAge: 15 * 60 * 1000,
       })
       .json({ message: 'accessToken refeshed!!', status: '200' });
@@ -116,14 +116,15 @@ export class AuthController {
     const token = response?.accessToken;
 
     res.cookie('access_token', token, {
-      httpOnly: false,
+      httpOnly: true,
       secure: true,
       sameSite: 'none',
       maxAge: 1000 * 60 * 60 * 24,
     });
 
     return res.redirect(
-      `${this.configService.get || 'http://localhost:3001/dashboard'}`,
+      `${this.configService.get('FRONTEND')}/dashboard` ||
+        `http://localhost:3001/dashboard`,
     );
   }
 
