@@ -17,6 +17,7 @@ export class Integrationservice {
     private botService: BotService,
   ) {}
 
+  // Bot Integrations
   async startBot(req: startBot, sendUpdate: (data: any) => void) {
     const Reqvalid: startBot = this.validationService.validate(
       IntegrationsValidation.StartBot,

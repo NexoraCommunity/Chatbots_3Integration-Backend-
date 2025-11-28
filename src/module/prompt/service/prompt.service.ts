@@ -87,7 +87,7 @@ export class PromptService {
         },
       });
 
-      if (!data) throw new HttpException('Cannot Find LLM', 403);
+      if (!data) throw new HttpException('Cannot Find Prompt', 403);
 
       return data;
     } catch (error) {

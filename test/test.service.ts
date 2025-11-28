@@ -5,10 +5,7 @@ import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class testService {
-  constructor(
-    private prismaService: PrismaService,
-    private configService: ConfigService,
-  ) {}
+  constructor(private prismaService: PrismaService) {}
 
   // Auth Service Test
   async DeleteTestUser() {
@@ -25,6 +22,26 @@ export class testService {
     await this.prismaService.userOtp.deleteMany({
       where: {
         userId: user?.id,
+      },
+    });
+    await this.prismaService.message.deleteMany({
+      where: {
+        message: 'test',
+      },
+    });
+    await this.prismaService.conversation.deleteMany({
+      where: {
+        room: 'testtust',
+      },
+    });
+    await this.prismaService.bot.deleteMany({
+      where: {
+        bot_name: 'test',
+      },
+    });
+    await this.prismaService.prompt.deleteMany({
+      where: {
+        name: 'test',
       },
     });
     await this.prismaService.user.delete({
@@ -90,15 +107,18 @@ export class testService {
     return refreshToken?.accessToken;
   }
 
-  // Prompt test service
-
-  async DeleteAllPromptUser() {
-    await this.prismaService.prompt.deleteMany({
+  async getUser() {
+    const data = await this.prismaService.user.findFirst({
       where: {
-        name: 'test',
+        email: 'testnexoraoraora@gmail.com',
       },
     });
+
+    return data;
   }
+
+  // Prompt test service
+
   async getPrompt() {
     const data = await this.prismaService.prompt.findFirst({
       where: {
@@ -108,13 +128,33 @@ export class testService {
     return data;
   }
 
-  async getUser() {
-    const data = await this.prismaService.user.findFirst({
+  // Conversation Test Service
+  async getConversation() {
+    const data = await this.prismaService.conversation.findFirst({
       where: {
-        email: 'testnexoraoraora@gmail.com',
+        room: 'testtust',
       },
     });
+    return data;
+  }
 
+  // Bot Test Service
+  async getBot() {
+    const data = await this.prismaService.bot.findFirst({
+      where: {
+        bot_name: 'test',
+      },
+    });
+    return data;
+  }
+
+  // Messge Test Service
+  async getMessage() {
+    const data = await this.prismaService.message.findFirst({
+      where: {
+        message: 'test',
+      },
+    });
     return data;
   }
 }

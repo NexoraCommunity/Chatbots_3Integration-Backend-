@@ -17,7 +17,7 @@ import { Prompt } from '@prisma/client';
 @Controller('api')
 export class PromptController {
   constructor(private promptService: PromptService) {}
-  @Post('prompt')
+  @Post('prompts')
   @HttpCode(200)
   async addNewPrompt(
     @Body() body: postPrompt,
@@ -30,7 +30,7 @@ export class PromptController {
     };
   }
 
-  @Get('prompt')
+  @Get('prompts')
   @HttpCode(200)
   async getPrompt(
     @Query() query: GetModelPrompt,
@@ -42,7 +42,7 @@ export class PromptController {
       status: '200',
     };
   }
-  @Get('/admin/prompt')
+  @Get('/admin/prompts')
   @HttpCode(200)
   async getPromptAdmin(
     @Query() query: GetModelPrompt,
@@ -54,7 +54,7 @@ export class PromptController {
       status: '200',
     };
   }
-  @Get('prompt/:id')
+  @Get('prompts/:id')
   @HttpCode(200)
   async getPromptbyid(@Param('id') id: string): Promise<WebResponse<Prompt>> {
     const data = await this.promptService.getPromptbyId(id);
@@ -64,7 +64,7 @@ export class PromptController {
     };
   }
 
-  @Patch('prompt/:id')
+  @Patch('prompts/:id')
   @HttpCode(200)
   async editPrompt(
     @Body() body: PromptApi,
@@ -77,7 +77,7 @@ export class PromptController {
       status: '200',
     };
   }
-  @Delete('prompt/:id')
+  @Delete('prompts/:id')
   @HttpCode(200)
   async deletePrompt(@Param('id') id: string): Promise<WebResponse<PromptApi>> {
     await this.promptService.deletePrompt(id);

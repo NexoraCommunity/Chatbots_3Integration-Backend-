@@ -1,5 +1,6 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
-import makeWASocket, {
+import {
+  makeWASocket,
   DisconnectReason,
   ConnectionState,
   BaileysEventMap,
@@ -9,7 +10,7 @@ import * as qrcodeT from 'qrcode-terminal';
 import { WhatsappAuthService } from './session.service';
 import { PrismaService } from 'src/module/common/prisma.service';
 import { AiService } from 'src/module/aiWrapper/service/aiWrapper.service';
-import { ConversationWrapper } from 'src/model/aiWrapper';
+import { ConversationWrapper } from 'src/model/aiWrapper.model';
 import { BotService } from 'src/module/bot/service/bot.service';
 
 type MessagesUpsert = BaileysEventMap['messages.upsert'];

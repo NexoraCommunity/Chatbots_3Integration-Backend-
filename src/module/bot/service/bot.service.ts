@@ -87,7 +87,7 @@ export class BotService {
         },
       });
 
-      if (!data) throw new HttpException('Cannot Find LLM', 403);
+      if (!data) throw new HttpException('Cannot Find Bot', 403);
 
       return data;
     } catch (error) {

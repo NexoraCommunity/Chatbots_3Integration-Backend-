@@ -26,16 +26,6 @@ Request Body :
 
 
 
-Request Header : 
-
-```http
-api-key: SecretKey,
-authorization: AccessToken,
-
-```
-
-
-
 Response Body : 
 
 ```json
@@ -73,12 +63,6 @@ Response Body :
 ## Get ALL Prompt
 **Endpoint : GET /api/prompts?page=&limit=&userId**
 
-Request Header : 
-
-```http
-api-key: SecretKey,
-authorization: AccessToken,
-```
 Request Query : 
 
 ```http
@@ -124,12 +108,6 @@ Response Body :
 
 **Endpoint : GET /api/prompts/prompts:id**
 
-Request Header : 
-
-```http
-api-key: SecretKey,
-authorization: AccessToken,
-```
 
 Response Body : 
 
@@ -177,14 +155,6 @@ Request Body :
 ```
 
 
-
-Request Header : 
-
-```http
-api-key: SecretKey,
-authorization: AccessToken,
-```
-
 Response Body : 
 
 ```json
@@ -226,12 +196,6 @@ Response Body :
 **Endpoint : DELETE /api/prompts/prompts:id**
 
 
-Request Header : 
-
-```http
-api-key: SecretKey,
-authorization: AccessToken,
-```
 
 Response Body : 
 

@@ -87,7 +87,7 @@ export class MessageService {
         },
       });
 
-      if (!data) throw new HttpException('Cannot Find LLM', 403);
+      if (!data) throw new HttpException('Cannot Find Message', 403);
 
       return data;
     } catch (error) {

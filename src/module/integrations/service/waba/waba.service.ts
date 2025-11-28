@@ -4,7 +4,7 @@ import { PostMessage, WabaHook } from 'src/model/waba.model';
 import { ValidationService } from 'src/module/common/validation.service';
 import { PrismaService } from 'src/module/common/prisma.service';
 import { AiService } from 'src/module/aiWrapper/service/aiWrapper.service';
-import { ConversationWrapper } from 'src/model/aiWrapper';
+import { ConversationWrapper } from 'src/model/aiWrapper.model';
 import { IntegrationsValidation } from '../../dto/Integration.validation';
 
 @Injectable()

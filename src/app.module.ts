@@ -11,15 +11,21 @@ import { MessageModule } from './module/message/message.module';
 import { ConversationModule } from './module/conversation/conversation.module';
 import { AppGateway } from './app.gateway';
 import { AiWrapperModule } from './module/aiWrapper/aiWrapper.module';
+import { ProductModule } from './module/product/product.module';
+import { CategoryModule } from './module/category/category.module';
+import { VariantModule } from './module/variant/variant.module';
 
 @Module({
   imports: [
     CommonModule,
     BotModule,
     LlmModule,
+    ProductModule,
     IntegrationsModule,
     AuthModule,
     PromptModule,
+    CategoryModule,
+    VariantModule,
     UserModule,
     AiWrapperModule,
     PassportModule.register({ session: true }),

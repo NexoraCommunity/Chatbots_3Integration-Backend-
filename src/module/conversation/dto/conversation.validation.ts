@@ -12,5 +12,6 @@ export class ConversationValidation {
   static readonly Pagination: ZodType = z.object({
     page: z.string().min(1).max(50),
     limit: z.string().min(1).max(50),
+    integrationType: z.string().min(1).max(50).optional(),
   });
 }

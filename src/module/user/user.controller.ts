@@ -13,7 +13,7 @@ import {
 import type { Request, Response } from 'express';
 import { WebResponse } from 'src/model/web.model';
 import { UserService } from './service/user.service';
-import { GetCurrentUser, PostCurrentUser } from 'src/model/user.model';
+import { GetCurrentUser } from 'src/model/user.model';
 
 @Controller('api')
 export class UserController {
@@ -21,7 +21,7 @@ export class UserController {
   @Get('user')
   @HttpCode(200)
   async getCurrentUser(@Req() request: Request, @Res() response: Response) {
-    const accessToken = request.headers['authorization'];
+    const accessToken = request.cookies.access_token;
     const data = await this.userService.getCurrentUser(String(accessToken));
 
     response.status(200).json({

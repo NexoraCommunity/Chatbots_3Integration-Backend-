@@ -25,12 +25,12 @@ export class ConversationService {
       this.validationService.validate(ConversationValidation.Pagination, query);
     if (!ConversationValid) throw new HttpException('Validation Error', 400);
     const { page, limit, integrationType } = ConversationValid;
-    if (query.integrationType == '' || !query.integrationType)
+    if (integrationType == '' || !integrationType)
       throw new HttpException('Validation Error', 400);
 
     const data = await this.prismaService.conversation.findMany({
       where: {
-        integrationType: query.integrationType,
+        integrationType: integrationType,
       },
       skip: (Number(page) - 1) * Number(limit),
       take: Number(limit),
@@ -85,7 +85,7 @@ export class ConversationService {
         },
       });
 
-      if (!data) throw new HttpException('Cannot Find LLM', 403);
+      if (!data) throw new HttpException('Cannot Find Conversation', 403);
 
       return data;
     } catch (error) {
@@ -111,7 +111,7 @@ export class ConversationService {
 
     const data = await this.prismaService.conversation.create({
       data: {
-        ...ConversationValid,
+        botId: ConversationValid.botId,
         integrationType: req.integrationType,
         room: ConversationValid.room,
       },

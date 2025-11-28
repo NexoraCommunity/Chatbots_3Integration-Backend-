@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { ConversationWrapper } from 'src/model/aiWrapper';
+import { ConversationWrapper } from 'src/model/aiWrapper.model';
 import { ValidationService } from 'src/module/common/validation.service';
 import { GroqService } from 'src/module/llm/LlmService/groq.service';
 import { AiWrapperValidation } from '../dto/aiWrapper.validation';

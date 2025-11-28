@@ -1,6 +1,6 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import TelegramBot from 'node-telegram-bot-api';
-import { ConversationWrapper } from 'src/model/aiWrapper';
+import { ConversationWrapper } from 'src/model/aiWrapper.model';
 import { AiService } from 'src/module/aiWrapper/service/aiWrapper.service';
 import { BotService } from 'src/module/bot/service/bot.service';
 import { PrismaService } from 'src/module/common/prisma.service';

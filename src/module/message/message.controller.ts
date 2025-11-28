@@ -22,7 +22,7 @@ import { Message } from '@prisma/client';
 @Controller('api')
 export class MessageController {
   constructor(private MessageService: MessageService) {}
-  @Post('Message')
+  @Post('message')
   @HttpCode(200)
   async addNewMessage(
     @Body() body: PostMessage,
@@ -35,7 +35,7 @@ export class MessageController {
     };
   }
 
-  @Get('Message')
+  @Get('message')
   @HttpCode(200)
   async getMessage(
     @Query() query: GetModelMessage,
@@ -47,7 +47,7 @@ export class MessageController {
       status: '200',
     };
   }
-  @Get('/admin/Message')
+  @Get('/admin/message')
   @HttpCode(200)
   async getMessageAdmin(
     @Query() query: GetModelMessage,
@@ -59,7 +59,7 @@ export class MessageController {
       status: '200',
     };
   }
-  @Get('Message/:id')
+  @Get('message/:id')
   @HttpCode(200)
   async getMessagebyid(@Param('id') id: string): Promise<WebResponse<Message>> {
     const data = await this.MessageService.getMessagebyId(id);
@@ -69,7 +69,7 @@ export class MessageController {
     };
   }
 
-  @Patch('Message/:id')
+  @Patch('message/:id')
   @HttpCode(200)
   async editMessage(
     @Body() body: ChangeMessage,
@@ -82,7 +82,7 @@ export class MessageController {
       status: '200',
     };
   }
-  @Delete('Message/:id')
+  @Delete('message/:id')
   @HttpCode(200)
   async deleteMessage(
     @Param('id') id: string,

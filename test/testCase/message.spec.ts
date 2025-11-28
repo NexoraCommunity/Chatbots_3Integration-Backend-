@@ -10,7 +10,7 @@ import { testService } from '../test.service';
 import { JwtFilter } from 'src/filter/jwt.filter';
 import cookieParser from 'cookie-parser';
 
-describe('UserRouteTest', () => {
+describe('MessagesRouteTest', () => {
   let app: INestApplication<App>;
   let test: testService;
 
@@ -34,6 +34,7 @@ describe('UserRouteTest', () => {
       })(res.cookie);
       next();
     });
+
     app.useGlobalFilters(new HttpFilter());
     app.useGlobalFilters(new ValidationFilter());
     app.useGlobalFilters(new JwtFilter());
@@ -42,39 +43,52 @@ describe('UserRouteTest', () => {
     await app.init();
   });
 
-  describe('GET /api/user current user', () => {
-    it('should be accepted if user authentication', async () => {
+  afterAll(async () => {
+    test.DeleteTestUser();
+  });
+
+  describe('GET api/message', () => {
+    it('should be accepted if user authentication and request valid', async () => {
+      const conversation = await test.getConversation();
       const accessToken = await test.getAccessToken();
-      const user = await test.getUser();
       const response = await request(app.getHttpServer())
-        .get(`/api/user`)
+        .get(`/api/message?page=2&limit=2&conversationId=${conversation?.id}`)
         .set('Cookie', [`access_token=${accessToken}`]);
 
       expect(response.status).toBe(200);
-      expect(response.body.message).toBe('Successfuly get current user!!');
-      expect(response.body.data.firstName).toBe(user?.firstName);
-      expect(response.body.data.lastName).toBe(user?.lastName);
-      expect(response.body.data.email).toBe(user?.email);
-      expect(response.body.data.picture).toBe(user?.picture);
-      expect(response.body.data.id).toBe(user?.id);
+      expect(response.body.data).toBeDefined();
+      expect(response.body.pagination).toBeDefined();
     });
+    it('should be rejected if request invalid', async () => {
+      const accessToken = await test.getAccessToken();
+      const response = await request(app.getHttpServer())
+        .get(`/api/message`)
+        .set('Cookie', [`access_token=${accessToken}`]);
+
+      expect(response.status).toBe(400);
+      expect(response.body.error).toBeDefined();
+    });
+
     it('get should be rejected if unathorized', async () => {
-      const response = await request(app.getHttpServer()).get('/api/user');
+      const conversation = await test.getConversation();
+      const response = await request(app.getHttpServer()).get(
+        '/api/message?page=2&limit=2&conversationId=${conversation?.id}',
+      );
 
       expect(response.status).toBe(401);
       expect(response.body.error).toBe('Unauthorized!!');
     });
     it('get should be rejected if accessToken is invalid', async () => {
       const response = await request(app.getHttpServer())
-        .get('/api/user')
-        .set('Cookie', [`access_token=Invalid_Token`]);
+        .get('/api/message?page=2&limit=2&conversationId=${conversation?.id}')
+        .set('Cookie', [`access_token=Invalid`]);
 
       expect(response.status).toBe(400);
       expect(response.body.error).toBe('Invalid access token!!');
     });
     it('get should be rejected if accessToken is expired', async () => {
       const response = await request(app.getHttpServer())
-        .get('/api/user')
+        .get('/api/message?page=2&limit=2&conversationId=${conversation?.id}')
         .set('Cookie', [
           'access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJjZTZmODUxYi1kNjNjLTQwYzUtOWRiOS0xZTY1Mzg3NjVjZjYiLCJpYXQiOjE3NjE2NzQ4NjksImV4cCI6MTc2MTY3NTc2OX0.MS4KXwAUWNdCTeT21F9kSOoPqdrQoZ__0wSIbGtJzEY',
         ]);
@@ -84,226 +98,229 @@ describe('UserRouteTest', () => {
     });
   });
 
-  describe('POST /api/user/sendOtp', () => {
-    it('should be accepted if user authentication', async () => {
+  describe('POST /api/message', () => {
+    it('should be posted if request is valid', async () => {
+      const conversation = await test.getConversation();
       const accessToken = await test.getAccessToken();
-      const user = await test.getUser();
       const response = await request(app.getHttpServer())
-        .post(`/api/user/sendOtp`)
-        .set('Cookie', [`access_token=${accessToken}`])
+        .post('/api/message')
         .send({
-          email: 'testnexoraoraora@gmail.com',
-          id: user?.id,
-        });
+          conversationId: conversation?.id,
+          message: 'test',
+          type: 'whatsapp',
+          role: 'user',
+        })
+        .set('Cookie', [`access_token=${accessToken}`]);
 
       expect(response.status).toBe(200);
-      expect(response.body.message).toBe('Verification Send!!');
+      expect(response.body.message).toBe('Message created succesfully!!');
+      expect(response.body.data.message).toBe('test');
+      expect(response.body.data.type).toBe('whatsapp');
+      expect(response.body.data.role).toBe('user');
     });
-    it('should be rejected if request invalid', async () => {
+    it('should be rejected if request is invalid', async () => {
       const accessToken = await test.getAccessToken();
       const response = await request(app.getHttpServer())
-        .post(`/api/user/sendOtp`)
-        .set('Cookie', [`access_token=${accessToken}`])
+        .post('/api/message')
         .send({
-          email: '',
-          id: '',
-        });
+          conversationId: '',
+          message: '',
+          type: '',
+          role: '',
+        })
+        .set('Cookie', [`access_token=${accessToken}`]);
 
       expect(response.status).toBe(400);
       expect(response.body.error).toBeDefined();
     });
     it('post should be rejected if unathorized', async () => {
-      const response = await request(app.getHttpServer()).post(
-        '/api/user/sendOtp',
-      );
+      const bot = await test.getBot();
+      const response = await request(app.getHttpServer())
+        .post('/api/message')
+        .send({
+          conversationId: '',
+          message: '',
+          type: '',
+          role: '',
+        });
 
       expect(response.status).toBe(401);
       expect(response.body.error).toBe('Unauthorized!!');
     });
     it('post should be rejected if accessToken is invalid', async () => {
       const response = await request(app.getHttpServer())
-        .post('/api/user/sendOtp')
+        .post('/api/message')
+        .send({
+          conversationId: '',
+          message: '',
+          type: '',
+          role: '',
+        })
         .set('Cookie', [`access_token=Invalid_Token`]);
 
       expect(response.status).toBe(400);
       expect(response.body.error).toBe('Invalid access token!!');
     });
     it('post should be rejected if accessToken is expired', async () => {
+      const bot = await test.getBot();
+
       const response = await request(app.getHttpServer())
-        .post('/api/user/sendOtp')
+        .post('/api/message')
+        .send({
+          conversationId: '',
+          message: '',
+          type: '',
+          role: '',
+        })
         .set('Cookie', [
           'access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJjZTZmODUxYi1kNjNjLTQwYzUtOWRiOS0xZTY1Mzg3NjVjZjYiLCJpYXQiOjE3NjE2NzQ4NjksImV4cCI6MTc2MTY3NTc2OX0.MS4KXwAUWNdCTeT21F9kSOoPqdrQoZ__0wSIbGtJzEY',
         ]);
+
       expect(response.status).toBe(400);
       expect(response.body.error).toBe('Access token expired!!');
     });
   });
-  describe('POST /api/user/password ', () => {
-    it('should be rejected if request codeOTP is Invalid', async () => {
-      const accessToken = await test.getAccessToken();
-      const http = await request(app.getHttpServer());
-      const url = http.post('/api/user/password');
-      const user = await test.getUser();
 
-      const response = await url
-        .send({
-          codeOTP: '000000',
-          email: 'testnexoraoraora@gmail.com',
-          password: 'testchange123.',
-          id: user?.id,
-        })
+  describe('GET /api/message/:id', () => {
+    it('should be accepted if user authentication', async () => {
+      const message = await test.getMessage();
+      const accessToken = await test.getAccessToken();
+      const response = await request(app.getHttpServer())
+        .get(`/api/message/${String(message?.id)}`)
+        .set('Cookie', [`access_token=${accessToken}`]);
+
+      expect(response.status).toBe(200);
+      expect(response.body.data.message).toBe('test');
+    });
+
+    it('should be rejected if prommptId is invalid', async () => {
+      const accessToken = await test.getAccessToken();
+      const response = await request(app.getHttpServer())
+        .get(`/api/message/awkokowkowkwokwowk`)
         .set('Cookie', [`access_token=${accessToken}`]);
 
       expect(response.status).toBe(400);
-      expect(response.body.error).toBe('Invalid OTP code!!');
+      expect(response.body.error).toBe('MessageId is Invalid');
     });
-    it('should be accepted if user authentication', async () => {
-      const accessToken = await test.getAccessToken();
-      const user = await test.GetOTPUser();
-      const response = await request(app.getHttpServer())
-        .post(`/api/user/password`)
-        .set('Cookie', [`access_token=${accessToken}`])
+  });
 
-        .send({
-          email: 'testnexoraoraora@gmail.com',
-          password: 'testchange123.',
-          codeOTP: user?.userOtp[0].otpCode,
-          id: user?.id,
-        });
-      await test.AddNewExpiredOTP(String(user?.id));
-
-      expect(response.status).toBe(200);
-      expect(response.body.message).toBe('Password updated successfuly!!');
-    });
-    it('should be rejected if request invalid', async () => {
+  describe('PATCH /api/conversation/:id', () => {
+    it('should be rejected if request is invalid', async () => {
+      const message = await test.getMessage();
       const accessToken = await test.getAccessToken();
       const response = await request(app.getHttpServer())
-        .post(`/api/user/password`)
-        .set('Cookie', [`access_token=${accessToken}`])
+        .patch(`/api/message/${message?.id}`)
         .send({
-          email: '',
-          password: '',
-          codeOTP: '',
-          id: '',
-        });
+          message: '',
+          type: '',
+        })
+        .set('Cookie', [`access_token=${accessToken}`]);
 
       expect(response.status).toBe(400);
       expect(response.body.error).toBeDefined();
-    });
-    it('post should be rejected if unathorized', async () => {
-      const response = await request(app.getHttpServer()).post(
-        '/api/user/password',
-      );
-
-      expect(response.status).toBe(401);
-      expect(response.body.error).toBe('Unauthorized!!');
-    });
-    it('post should be rejected if accessToken is invalid', async () => {
-      const response = await request(app.getHttpServer())
-        .post('/api/user/password')
-        .set('Cookie', [`access_token=Invalid_Token`]);
-
-      expect(response.status).toBe(400);
-      expect(response.body.error).toBe('Invalid access token!!');
-    });
-    it('post should be rejected if accessToken is expired', async () => {
-      const response = await request(app.getHttpServer())
-        .post('/api/user/password')
-        .set('Cookie', [
-          'access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJjZTZmODUxYi1kNjNjLTQwYzUtOWRiOS0xZTY1Mzg3NjVjZjYiLCJpYXQiOjE3NjE2NzQ4NjksImV4cCI6MTc2MTY3NTc2OX0.MS4KXwAUWNdCTeT21F9kSOoPqdrQoZ__0wSIbGtJzEY',
-        ]);
-
-      expect(response.status).toBe(400);
-      expect(response.body.error).toBe('Access token expired!!');
-    });
-
-    it('should be rejected if request codeOTP is Expired', async () => {
-      const accessToken = await test.getAccessToken();
-      const http = await request(app.getHttpServer());
-      const url = http.post('/api/user/password');
-      const user = await test.getUser();
-      const OTP = await test.GetOTPUser();
-
-      expect(OTP?.userOtp[0].otpCode).toBe('109109');
-
-      const response = await url
-        .send({
-          codeOTP: OTP?.userOtp[0].otpCode,
-          email: 'testnexoraoraora@gmail.com',
-          password: 'testchange123.',
-          id: user?.id,
-        })
-        .set('Cookie', [`access_token=${accessToken}`]);
-
-      expect(response.status).toBe(400);
-      expect(response.body.error).toBe('OTP code is expired!!');
-    });
-  });
-  describe('PATCH /api/user/:id current user', () => {
-    it('should be accepted if user authentication', async () => {
-      const accessToken = await test.getAccessToken();
-      const user = await test.getUser();
-      const response = await request(app.getHttpServer())
-        .patch(`/api/user/${user?.id}`)
-        .set('Cookie', [`access_token=${accessToken}`])
-        .send({
-          firstName: 'testUpdated',
-          lastName: 'testUpdated',
-          picture: 'testUpdated',
-        });
-
-      expect(response.status).toBe(200);
-      expect(response.body.message).toBe('User updated successfuly!!');
-      expect(response.body.data.firstName).toBe('testUpdated');
-      expect(response.body.data.lastName).toBe('testUpdated');
-      expect(response.body.data.picture).toBe('testUpdated');
     });
     it('should be rejected if Id is not found', async () => {
       const accessToken = await test.getAccessToken();
       const response = await request(app.getHttpServer())
-        .patch(`/api/user/aokwokawok`)
+        .patch(`/api/message/aokwokwokwko`)
+        .send({
+          message: 'test',
+          type: 'whatsapp',
+        })
         .set('Cookie', [`access_token=${accessToken}`]);
 
       expect(response.status).toBe(400);
-      expect(response.body.error).toBe('UserId is Invalid');
+      expect(response.body.error).toBe('MessageId is Invalid');
+    });
+    it('should be accepted if request is valid', async () => {
+      const message = await test.getMessage();
+      const accessToken = await test.getAccessToken();
+      const response = await request(app.getHttpServer())
+        .patch(`/api/message/${message?.id}`)
+        .send({
+          message: 'test',
+          type: 'whatsapp updated',
+        })
+        .set('Cookie', [`access_token=${accessToken}`]);
+
+      expect(response.status).toBe(200);
+      expect(response.body.message).toBe('Message updated succesfully!!');
+      expect(response.body.data.message).toBe('test');
+      expect(response.body.data.type).toBe('whatsapp updated');
+      expect(response.body.data.role).toBe('user');
     });
     it('patch should be rejected if unathorized', async () => {
-      const response = await request(app.getHttpServer()).patch('/api/user/id');
+      const response = await request(app.getHttpServer())
+        .patch('/api/message/aowkoakowko')
+        .send({
+          message: 'test',
+          type: 'whatsapp updated',
+        });
 
       expect(response.status).toBe(401);
       expect(response.body.error).toBe('Unauthorized!!');
     });
+
     it('patch should be rejected if accessToken is invalid', async () => {
       const response = await request(app.getHttpServer())
-        .patch('/api/user/id')
-        .set('Cookie', [`access_token=Invalid_Token`]);
+        .patch('/api/message/akwokwokw')
+        .send({
+          message: 'test',
+          type: 'whatsapp updated',
+        })
+        .set('Cookie', [`access_token=Invalid_TOken`]);
 
       expect(response.status).toBe(400);
       expect(response.body.error).toBe('Invalid access token!!');
     });
     it('patch should be rejected if accessToken is expired', async () => {
       const response = await request(app.getHttpServer())
-        .patch('/api/user/id')
+        .patch('/api/message/aokwokoa')
+        .send({
+          message: 'test',
+          type: 'whatsapp updated',
+        })
         .set('Cookie', [
           'access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJjZTZmODUxYi1kNjNjLTQwYzUtOWRiOS0xZTY1Mzg3NjVjZjYiLCJpYXQiOjE3NjE2NzQ4NjksImV4cCI6MTc2MTY3NTc2OX0.MS4KXwAUWNdCTeT21F9kSOoPqdrQoZ__0wSIbGtJzEY',
         ]);
+
       expect(response.status).toBe(400);
       expect(response.body.error).toBe('Access token expired!!');
     });
   });
 
-  describe('DELETE /api/user/:id current user', () => {
+  describe('DELETE /api/message/:id', () => {
+    it('should be rejected if Id is not found', async () => {
+      const accessToken = await test.getAccessToken();
+      const response = await request(app.getHttpServer())
+        .delete(`/api/message/aakwokwowkok`)
+        .set('Cookie', [`access_token=${accessToken}`]);
+
+      expect(response.status).toBe(400);
+      expect(response.body.error).toBe('MessageId is Invalid');
+    });
+    // it('should be accepted if request is valid', async () => {
+    //   const message = await test.getMessage();
+    //   const accessToken = await test.getAccessToken();
+    //   const response = await request(app.getHttpServer())
+    //     .delete(`/api/conversation/${message?.id}`)
+    //     .set('Cookie', [`access_token=${accessToken}`]);
+
+    //   expect(response.status).toBe(200);
+    //   expect(response.body.message).toBe('Message deleted succesfully!!');
+    // });
     it('delete should be rejected if unathorized', async () => {
       const response = await request(app.getHttpServer()).delete(
-        '/api/admin/user/id',
+        '/api/message/aowkowko',
       );
 
       expect(response.status).toBe(401);
       expect(response.body.error).toBe('Unauthorized!!');
     });
+
     it('delete should be rejected if accessToken is invalid', async () => {
       const response = await request(app.getHttpServer())
-        .delete('/api/admin/user/id')
+        .delete('/api/message/okwkaowkoawk')
         .set('Cookie', [`access_token=Invalid_Token`]);
 
       expect(response.status).toBe(400);
@@ -311,23 +328,12 @@ describe('UserRouteTest', () => {
     });
     it('delete should be rejected if accessToken is expired', async () => {
       const response = await request(app.getHttpServer())
-        .delete('/api/admin/user/id')
+        .delete('/api/message/akwokwkwoaowwoa')
         .set('Cookie', [
           'access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJjZTZmODUxYi1kNjNjLTQwYzUtOWRiOS0xZTY1Mzg3NjVjZjYiLCJpYXQiOjE3NjE2NzQ4NjksImV4cCI6MTc2MTY3NTc2OX0.MS4KXwAUWNdCTeT21F9kSOoPqdrQoZ__0wSIbGtJzEY',
         ]);
-
       expect(response.status).toBe(400);
       expect(response.body.error).toBe('Access token expired!!');
-    });
-
-    it('should be rejected if Id is not found', async () => {
-      const accessToken = await test.getAccessToken();
-      const response = await request(app.getHttpServer())
-        .delete(`/api/admin/user/aoaokwokwokw`)
-        .set('Cookie', [`access_token=${accessToken}`]);
-
-      expect(response.status).toBe(400);
-      expect(response.body.error).toBe('UserId is Invalid');
     });
   });
 });

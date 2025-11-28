@@ -29,11 +29,26 @@
 
 ```bash
 $ npm install
+
 ```
+
+## Run Your DataBase and set .ENV file
+
+```
+ for example in .env.public
+   
+```
+
 
 ## Compile and run the project
 
 ```bash
+# run migration to db
+$ npx prisma migrate dev
+
+# generate
+$ npx prisma generate
+
 # development
 $ npm run start
 
@@ -45,6 +60,9 @@ $ npm run start:prod
 ```
 
 ## Run tests
+```
+if you want to run the test make sure add ?connection_limit=1 to our url database
+```
 
 ```bash
 # unit tests

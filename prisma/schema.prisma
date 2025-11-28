@@ -201,21 +201,25 @@ model Message {
 }
 
 model Product {
-  id          String    @id @default(uuid())
-  userId      String    @default(uuid())
-  name        String    @db.VarChar(100)
-  description String    @db.VarChar(500)
-  price       Float     @db.Float()
+  id          String   @id @default(uuid())
+  userId      String   @default(uuid())
+  categoryId  String   @default(uuid())
+  name        String   @db.VarChar(100)
+  description String   @db.VarChar(1000)
+  price       Float    @db.Float()
   stock       Int
-  weight      Float     @db.Float()
-  image       String    @db.VarChar(500)
-  variant     Variant[]
+  weight      Float?   @db.Float()
+  image       String   @db.VarChar(500)
   sku         String
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  orderItem OrderItem[]
-  user      User        @relation(fields: [userId], references: [id], onUpdate: Cascade)
+  variantOptions  VariantOption[]
+  productVariants ProductVariant[]
+  orderItem       OrderItem[]
+
+  user     User     @relation(fields: [userId], references: [id], onUpdate: Cascade)
+  category Category @relation(fields: [categoryId], references: [id], onUpdate: Cascade)
 
   @@map("Product")
 }
@@ -227,24 +231,56 @@ model Category {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user User @relation(fields: [userId], references: [id], onUpdate: Cascade)
+  user     User      @relation(fields: [userId], references: [id], onUpdate: Cascade)
+  products Product[]
 
   @@map("Category")
 }
 
-model Variant {
-  id              String   @id @default(uuid())
-  productId       String   @default(uuid())
-  name            String   @db.VarChar(100)
-  value           String   @db.VarChar(100)
-  image           String   @db.VarChar(500)
-  priceAdjustment Float    @db.Float()
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+model VariantOption {
+  id        String @id @default(uuid())
+  productId String
+  name      String @db.VarChar(100)
 
-  product Product @relation(fields: [productId], references: [id], onUpdate: Cascade)
+  product Product        @relation(fields: [productId], references: [id], onDelete: Cascade)
+  values  VariantValue[]
 
-  @@map("Variant")
+  @@map("VariantOption")
+}
+
+model VariantValue {
+  id       String @id @default(uuid())
+  optionId String
+  value    String @db.VarChar(100)
+
+  option               VariantOption         @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  productVariantValues ProductVariantValue[]
+
+  @@map("VariantValue")
+}
+
+model ProductVariant {
+  id        String @id @default(uuid())
+  productId String
+  sku       String @db.VarChar(255)
+  stock     Int
+  price     Float  @db.Float()
+
+  product Product               @relation(fields: [productId], references: [id], onDelete: Cascade)
+  values  ProductVariantValue[]
+
+  @@map("ProductVariant")
+}
+
+model ProductVariantValue {
+  id        String @id @default(uuid())
+  variantId String
+  valueId   String
+
+  variant ProductVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  value   VariantValue   @relation(fields: [valueId], references: [id], onDelete: Cascade)
+
+  @@map("ProductVariantValue")
 }
 
 model Customer {

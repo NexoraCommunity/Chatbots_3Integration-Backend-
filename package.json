@@ -97,7 +97,7 @@
       "^.+\\.(t|j)s$": "ts-jest"
     },
     "transformIgnorePatterns": [
-      "node_modules/(?!baileys)"
+      "/node_modules/(?!p-queue|baileys)/"
     ],
     "moduleNameMapper": {
       "^src/(.*)$": "<rootDir>/../src/$1"

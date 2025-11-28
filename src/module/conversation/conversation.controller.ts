@@ -22,7 +22,7 @@ import { Conversation } from '@prisma/client';
 @Controller('api')
 export class ConversationController {
   constructor(private ConversationService: ConversationService) {}
-  @Post('Conversation')
+  @Post('conversation')
   @HttpCode(200)
   async addNewConversation(
     @Body() body: PostConversation,
@@ -35,7 +35,7 @@ export class ConversationController {
     };
   }
 
-  @Get('Conversation')
+  @Get('conversation')
   @HttpCode(200)
   async getConversation(
     @Query() query: GetModelConversation,
@@ -48,7 +48,7 @@ export class ConversationController {
       status: '200',
     };
   }
-  @Get('/admin/Conversation')
+  @Get('/admin/conversation')
   @HttpCode(200)
   async getConversationAdmin(
     @Query() query: GetModelConversation,
@@ -60,7 +60,7 @@ export class ConversationController {
       status: '200',
     };
   }
-  @Get('Conversation/:id')
+  @Get('conversation/:id')
   @HttpCode(200)
   async getConversationbyid(
     @Param('id') id: string,
@@ -72,7 +72,7 @@ export class ConversationController {
     };
   }
 
-  @Patch('Conversation/:id')
+  @Patch('conversation/:id')
   @HttpCode(200)
   async editConversation(
     @Body() body: ChangeConversation,
@@ -88,7 +88,7 @@ export class ConversationController {
       status: '200',
     };
   }
-  @Delete('Conversation/:id')
+  @Delete('conversation/:id')
   @HttpCode(200)
   async deleteConversation(
     @Param('id') id: string,

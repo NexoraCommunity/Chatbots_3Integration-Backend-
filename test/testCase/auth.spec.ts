@@ -8,6 +8,7 @@ import { ValidationFilter } from 'src/filter/validation.filter';
 import { TestModule } from '../test.module';
 import { testService } from '../test.service';
 import { JwtFilter } from 'src/filter/jwt.filter';
+import cookieParser from 'cookie-parser';
 
 describe('CredentialTest', () => {
   let app: INestApplication<App>;
@@ -19,10 +20,26 @@ describe('CredentialTest', () => {
     }).compile();
 
     app = moduleFixture.createNestApplication();
+
+    const isTest = process.env.NODE_ENV === 'test';
+
+    app.use(cookieParser());
+
+    app.use((req, res, next) => {
+      res.cookie = ((original) => (name, value, options) => {
+        if (isTest) {
+          options = { ...options, secure: false }; // override secure saat test
+        }
+        return original.call(res, name, value, options);
+      })(res.cookie);
+      next();
+    });
     app.useGlobalFilters(new HttpFilter());
     app.useGlobalFilters(new ValidationFilter());
     app.useGlobalFilters(new JwtFilter());
     test = app.get(testService);
+
+    // await test.DeleteTestUser();
 
     await app.init();
   });
@@ -201,7 +218,7 @@ describe('CredentialTest', () => {
     it('should be rejected if refreshToken is invalid', async () => {
       const response = await request(app.getHttpServer())
         .get('/auth/refresh')
-        .set('Authorization', 'invalidtoken')
+        .set('Cookie', [`refresh_token="invalid"`])
         .set('Content-Type', 'application/json');
       expect(response.status).toBe(400);
       expect(response.body.error).toBe('refreshToken is invalid!!');
@@ -209,7 +226,7 @@ describe('CredentialTest', () => {
     it('should be rejected if refreshToken is Expired', async () => {
       const response = await request(app.getHttpServer())
         .get('/auth/refresh')
-        .set('Authorization', '')
+        .set('Cookie', [`refresh_token=""`])
         .set('Content-Type', 'application/json');
 
       expect(response.status).toBe(400);
@@ -219,7 +236,7 @@ describe('CredentialTest', () => {
       const refreshToken = await test.getRefreshToken();
       const response = await request(app.getHttpServer())
         .get('/auth/refresh')
-        .set('Authorization', String(refreshToken))
+        .set('Cookie', [`refresh_token=${refreshToken}`])
         .set('Content-Type', 'application/json');
 
       expect(response.status).toBe(200);
