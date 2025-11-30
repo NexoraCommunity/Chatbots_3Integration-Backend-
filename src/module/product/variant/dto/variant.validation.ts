@@ -20,7 +20,7 @@ export class VariantValidation {
     stock: z.number(),
     price: z.number(),
   });
-  static readonly changeProduct: ZodType = z.object({
+  static readonly changeProductVariant: ZodType = z.object({
     id: z.string().min(1).max(225),
     image: z.string().min(1).max(550),
     sku: z.string().min(1).max(50),

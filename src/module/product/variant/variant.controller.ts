@@ -10,13 +10,14 @@ import {
   Query,
 } from '@nestjs/common';
 import {
+  ChangeProductVariant,
   ProductVariantApi,
   VariantOptionApi,
   VariantValueApi,
 } from 'src/model/variant.model';
 import { WebResponse } from 'src/model/web.model';
 import { VariantOptionService } from './service/variantOption.service';
-import { VariantOption, VariantValue } from '@prisma/client';
+import { ProductVariant, VariantOption, VariantValue } from '@prisma/client';
 import { VariantValueService } from './service/variantValue.service';
 import { ProductVariantService } from './service/productVariant.service';
 
@@ -28,18 +29,46 @@ export class VariantController {
     private productVariantService: ProductVariantService,
   ) {}
   //  --- ProductVariant ---
-  // @Post('generateProductVariant')
-  // @HttpCode(200)
-  // async generateProductVariant(
-  //   @Body() body: ProductVariantApi,
-  // ): Promise<WebResponse<ProductVariantApi[]>> {
-  //   const data = await this.productVariantService.generateProductVariant(body);
-  //   return {
-  //     data: data,
-  //     message: 'ProductVariant generated succesfully!!',
-  //     status: '200',
-  //   };
-  // }
+  @Post('productVariant')
+  @HttpCode(200)
+  async generateProductVariant(
+    @Body() query,
+  ): Promise<WebResponse<ProductVariant[]>> {
+    const data = await this.productVariantService.generateProductVariant(query);
+    return {
+      data: data,
+      message: 'ProductVariant generated succesfully!!',
+      status: '200',
+    };
+  }
+
+  @Patch('productVariant/:id')
+  @HttpCode(200)
+  async editProduct(
+    @Body() body: ChangeProductVariant,
+    @Param('id') id: string,
+  ): Promise<WebResponse<ProductVariant>> {
+    const data = await this.productVariantService.editProductVariant({
+      ...body,
+      id: id,
+    });
+    return {
+      data: data,
+      message: 'ProductVariant updated succesfully!!',
+      status: '200',
+    };
+  }
+  @Delete('product:id')
+  @HttpCode(200)
+  async deleteProduct(
+    @Param('id') id: string,
+  ): Promise<WebResponse<ProductVariantApi>> {
+    await this.productVariantService.deleteProductVariant(id);
+    return {
+      message: 'ProductVariant deleted succesfully!!',
+      status: '200',
+    };
+  }
 
   //  --- End ProductVariant ---
   //  --- Variant Option ---
@@ -139,4 +168,5 @@ export class VariantController {
       status: '200',
     };
   }
+  // End VariantValue
 }
