@@ -85,6 +85,14 @@ export class ProductService {
         where: {
           id: id,
         },
+        include: {
+          productVariants: {
+            include: {
+              values: true,
+            },
+          },
+          variantOptions: true,
+        },
       });
 
       if (!data) throw new HttpException('Cannot Find Product', 403);

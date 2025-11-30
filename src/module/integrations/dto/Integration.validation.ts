@@ -13,4 +13,13 @@ export class IntegrationsValidation {
     data: z.string().min(1).max(700).optional(),
     numberPhoneWaba: z.string().min(1).max(225).optional(),
   });
+  static readonly Integration: ZodType = z.object({
+    name: z.string().min(1).max(100),
+    type: z.string().min(1).max(100),
+  });
+  static readonly changeIntegration: ZodType = z.object({
+    id: z.string().min(1).max(225),
+    name: z.string().min(1).max(100),
+    type: z.string().min(1).max(100),
+  });
 }

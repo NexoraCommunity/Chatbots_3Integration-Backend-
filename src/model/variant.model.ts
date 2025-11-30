@@ -1,47 +1,29 @@
-import { Product } from '@prisma/client';
-import { Pagination } from './web.model';
-
-export class ProductApi {
+export class VariantOptionApi {
+  productId: string;
   name: string;
-  description: string;
-  price: number;
-  image: string;
-  stock: number;
-  sku: string;
-  weight: number;
 }
 
-export class PostProduct {
-  name: string;
-  description: string;
+export class VariantValueApi {
+  optionId: string;
+  value: string;
+}
+export class ProductVariantValueApi {
+  variantId: string;
+  valueId: string;
+}
+
+export class ProductVariantApi {
+  productId: string;
+  sku: string;
+  stock: number;
   price: number;
   image: string;
-  stock: number;
-  sku: string;
-  weight: number;
-  userId: string;
-  categoryId: string;
 }
-export class ChangeProduct {
+
+export class ChangeProductVariant {
   id: string;
-  categoryId: string;
-  name: string;
-  description: string;
+  sku: string;
+  stock: number;
   price: number;
   image: string;
-  stock: number;
-  sku: string;
-  weight: number;
-}
-
-export class GetModelProduct {
-  userId?: string;
-  categoryId?: string;
-  page: string;
-  limit: string;
-}
-
-export class PaginationResponseProduct {
-  Product: Product[];
-  Pagination: Pagination;
 }

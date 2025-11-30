@@ -1,11 +1,29 @@
-import { Body, Controller, Get, Post, Query, Res } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  Param,
+  Patch,
+  Post,
+  Query,
+  Res,
+} from '@nestjs/common';
 
 import type { Response } from 'express';
 import { WabaService } from './service/waba/waba.service';
+import { WebResponse } from 'src/model/web.model';
+import { IntegrationApi } from 'src/model/integration.model';
+import { Integration } from '@prisma/client';
+import { Integrationservice } from './service/integration.service';
 
 @Controller('/auth')
 export class IntegrationsController {
-  constructor(private wabaService: WabaService) {}
+  constructor(
+    private wabaService: WabaService,
+    private integrationService: Integrationservice,
+  ) {}
 
   @Get('/waba/callback')
   verifyWebhook(
@@ -43,6 +61,69 @@ export class IntegrationsController {
     }
 
     return res.sendStatus(200);
+  }
+
+  @Post('/admin/integration')
+  @HttpCode(200)
+  async addNewbot(
+    @Body() body: IntegrationApi,
+  ): Promise<WebResponse<IntegrationApi>> {
+    const data = await this.integrationService.addNewIntegration(body);
+    return {
+      data: data,
+      message: 'Integration created succesfully!!',
+      status: '200',
+    };
+  }
+
+  @Get('integration')
+  @HttpCode(200)
+  async getbot(
+    @Query() query: IntegrationApi,
+  ): Promise<WebResponse<Integration[]>> {
+    const data = await this.integrationService.getIntegration(query);
+    return {
+      data: data,
+      status: '200',
+    };
+  }
+
+  @Get('integration/:id')
+  @HttpCode(200)
+  async getbotbyid(@Param('id') id: string): Promise<WebResponse<Integration>> {
+    const data = await this.integrationService.getIntegrationbyId(id);
+    return {
+      data: data,
+      status: '200',
+    };
+  }
+
+  @Patch('/admin/integration/:id')
+  @HttpCode(200)
+  async editbot(
+    @Body() body: IntegrationApi,
+    @Param('id') id: string,
+  ): Promise<WebResponse<IntegrationApi>> {
+    const data = await this.integrationService.editIntegration({
+      ...body,
+      id: id,
+    });
+    return {
+      data: data,
+      message: 'Integration updated succesfully!!',
+      status: '200',
+    };
+  }
+  @Delete('/admin/integrations/:id')
+  @HttpCode(200)
+  async deletebot(
+    @Param('id') id: string,
+  ): Promise<WebResponse<IntegrationApi>> {
+    await this.integrationService.deleteIntegration(id);
+    return {
+      message: 'Integration deleted succesfully!!',
+      status: '200',
+    };
   }
 }
 

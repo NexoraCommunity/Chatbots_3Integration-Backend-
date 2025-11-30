@@ -13,7 +13,6 @@ import { AppGateway } from './app.gateway';
 import { AiWrapperModule } from './module/aiWrapper/aiWrapper.module';
 import { ProductModule } from './module/product/product.module';
 import { CategoryModule } from './module/category/category.module';
-import { VariantModule } from './module/variant/variant.module';
 
 @Module({
   imports: [
@@ -25,7 +24,6 @@ import { VariantModule } from './module/variant/variant.module';
     AuthModule,
     PromptModule,
     CategoryModule,
-    VariantModule,
     UserModule,
     AiWrapperModule,
     PassportModule.register({ session: true }),

@@ -8,7 +8,7 @@ export class ProductApi {
   image: string;
   stock: number;
   sku: string;
-  weight: number;
+  weight: number | null;
 }
 
 export class PostProduct {
@@ -18,7 +18,7 @@ export class PostProduct {
   image: string;
   stock: number;
   sku: string;
-  weight: number;
+  weight: number | null;
   userId: string;
   categoryId: string;
 }
@@ -31,7 +31,7 @@ export class ChangeProduct {
   image: string;
   stock: number;
   sku: string;
-  weight: number;
+  weight: number | null;
 }
 
 export class GetModelProduct {

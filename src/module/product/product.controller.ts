@@ -24,7 +24,7 @@ export class ProductController {
   constructor(private productService: ProductService) {}
   @Post('product')
   @HttpCode(200)
-  async addNewMessage(
+  async addNewProduct(
     @Body() body: PostProduct,
   ): Promise<WebResponse<ProductApi>> {
     const data = await this.productService.addNewProduct(body);
@@ -37,7 +37,7 @@ export class ProductController {
 
   @Get('product')
   @HttpCode(200)
-  async getMessage(
+  async getProduct(
     @Query() query: GetModelProduct,
   ): Promise<WebResponse<Product[]>> {
     const data = await this.productService.getProductByUserId(query);
@@ -49,7 +49,7 @@ export class ProductController {
   }
   @Get('/admin/product')
   @HttpCode(200)
-  async getMessageAdmin(
+  async getProductAdmin(
     @Query() query: GetModelProduct,
   ): Promise<WebResponse<Product[]>> {
     const data = await this.productService.getProduct(query);
@@ -61,7 +61,7 @@ export class ProductController {
   }
   @Get('product/:id')
   @HttpCode(200)
-  async getMessagebyid(@Param('id') id: string): Promise<WebResponse<Product>> {
+  async getProductbyid(@Param('id') id: string): Promise<WebResponse<Product>> {
     const data = await this.productService.getProductbyId(id);
     return {
       data: data,
@@ -71,7 +71,7 @@ export class ProductController {
 
   @Patch('product/:id')
   @HttpCode(200)
-  async editMessage(
+  async editProduct(
     @Body() body: ChangeProduct,
     @Param('id') id: string,
   ): Promise<WebResponse<ProductApi>> {
@@ -84,7 +84,7 @@ export class ProductController {
   }
   @Delete('product:id')
   @HttpCode(200)
-  async deleteMessage(
+  async deleteProduct(
     @Param('id') id: string,
   ): Promise<WebResponse<ProductApi>> {
     await this.productService.deleteProduct(id);
