@@ -1,7 +1,10 @@
 # Bot API Documentation
 
+make sure add {credential: include} when call the api.
+
+
 ## Add BOT
-**Endpoint : POST /api/bots**
+**Endpoint : POST /api/bot**
 
 
 
@@ -9,20 +12,22 @@ Request Body :
 
 ```json
 {
-    "name":"CS Toko Online",
-    "LLM":"chatgpt 4.0",
-    "prompt":"Answer customer with expresive",
-    "type":"Wa", 
+    "bot_name":"CS Toko Online",
+    "llm":"openAi",
+    "model":"Gpt4.0",
+    "promptId":"prompt-123",
+    "type":"whatsapp", 
 }
 ```
 
+| Field    | Example Value                        | Description                                  | Fill      |
+|----------|----------------------------------------|----------------------------------------------|-----------|
+| type     | `whatsapp`, `telegram`, `website`      | The channel/platform type                    | required  |
+| name     | `Any`                                  | Custom name (free text)                      | required  |
+| promptId | `prompt-123`                           | Data from model Prompt                       | required  |
+| model    | `llama 3`, `gpt 4.0`, etc.             | You can get model list at /api/llm           | required  |
+| llm      | `openAi`, `groq`, `Gemini`, etc.       | Large Language Model option                  | required  |
 
-| Field  | Example Value                        | Description                                  |
-|--------|--------------------------------------|----------------------------------------------|
-| type   | `Wa`, `Tele`, `Wrap`                 | The channel/platform type                     |
-| name   | `Any`                                | Custom name (free text)                       |
-| prompt | `prompt1`, `prompt2`, `prompt3`      | Data from model Prompt                        |
-| llm    | `ChatGPT-4.0`, `LLaMA`, `Gemini`, `DeepSeek`, etc. | Large Language Model option                  |
 
 
 
@@ -45,10 +50,11 @@ data:{
     "status":200,
     "message":"Bot created succesfully!!",
     "bot":{
-        "name":"CS Toko Online",
-        "LLM":"chatgpt 4.0",
-        "prompt":"Answer customer with expresive",
-        "type":"Wa", 
+        "bot_name":"CS Toko Online",
+        "llm":"openAi",
+        "model":"Gpt4.0",
+        "promptId":"prompt-123",
+        "type":"whatsapp", 
     },
 }
 ```
@@ -73,14 +79,8 @@ data:{
 
 
 ## Get ALL BOT
-**Endpoint : GET /api/bots**
+**Endpoint : GET /api/bot**
 
-Request Header : 
-
-```http
-api-key: SecretKey,
-authorization: AccessToken,
-```
 
 Response Body : 
 
@@ -90,16 +90,18 @@ data:{
     "status":200,
     "bot":[
         {
-            "name":"CS Toko Online",
-            "LLM":"chatgpt 4.0",
-            "prompt":"Answer customer with expresive",
-            "type":"Wa", 
+            "bot_name":"CS Toko Online",
+            "llm":"openAi",
+            "model":"Gpt4.0",
+            "promptId":"prompt-123",
+            "type":"whatsapp", 
         },
         {
-            "name":"CS sekolahan",
-            "LLM":"chatgpt 4.0",
-            "prompt":"Answer customer with expresive",
-            "type":"Tele", 
+            "bot_name":"CS Toko Online",
+            "llm":"openAi",
+            "model":"Gpt4.0",
+            "promptId":"prompt-123",
+            "type":"whatsapp", 
         },
     ],
     "pagination": {
@@ -119,13 +121,8 @@ data:{
 }
 ```
 
-**Endpoint : GET /api/bots/bots:id**
+**Endpoint : GET /api/bot/bot:id**
 
-Request Header : 
-
-```http
-api-key: SecretKey,
-```
 
 Response Body : 
 
@@ -134,10 +131,11 @@ Response Body :
 data:{
     "status":200,
     "bot":{
-        "name":"CS Toko Online",
-        "LLM":"chatgpt 4.0",
-        "prompt":"Answer customer with expresive",
-        "type":"WhatsaapBot", 
+            "bot_name":"CS Toko Online",
+            "llm":"openAi",
+            "model":"Gpt4.0",
+            "promptId":"prompt-123",
+            "type":"whatsapp", 
     }
 }
 ```
@@ -155,25 +153,20 @@ data:{
 
 
 ## Update BOT
-**Endpoint : Patch /api/bots/bots:id**
+**Endpoint : Patch /api/bot/bot:id**
 
 Request Body :
 
 ```json
 {
     "name":"CS Toko Online", //Optional
-    "LLM":"chatgpt 4.0",  //Optional
-    "prompt":"Answer customer with expresive",  //Optional
-    "type":"Wa",   //Optional
+    "llm":"openAi",  //Optional
+    "model":"chatgpt 4.0",  //Optional
+    "promptId":"prompt-123",  //Optional
 }
 ```
 
-Request Header : 
 
-```http
-api-key: SecretKey,
-authorization: AccessToken,
-```
 
 Response Body : 
 
@@ -184,9 +177,9 @@ data:{
     "message":"Bot updated successufully!!",
     "bot":{
         "name":"CS Toko Online",
-        "LLM":"chatgpt 4.0",
-        "prompt":"Answer customer with expresive",
-        "type":"Wa", 
+        "llm":"openAi",
+        "promptId":"prompt-123",
+        "type":"whatsapp", 
     },
 }
 ```
@@ -207,15 +200,8 @@ data:{
 
 
 ## Delete BOT
-**Endpoint : DELETE /api/bots/bots:id**
+**Endpoint : DELETE /api/bot/bot:id**
 
-
-Request Header : 
-
-```http
-api-key: SecretKey,
-authorization: AccessToken,
-```
 
 Response Body : 
 
@@ -233,176 +219,4 @@ data:{
     "error":"Unathorized",
 }
 ```
-___
 
-## Create Conversations
-**Endpoint : POST /api/bots/{botId}/conversations**
-
-
-Request Header : 
-
-```http
-api-key: SecretKey,
-```
-
-Response Body : 
-
-```json
-// Success response
-data:{
-    "status":200,
-    "conversation":{
-        "conversationID":"unique",
-        "room":"unique"
-    },
-}
-```
-```json
-// Error response
-data:{
-    "status":400,
-    "message":"Validation Error",
-}
-```
-```json
-// Error response
-data:{
-    "status":505,
-    "error":"Internal Server Error",
-}
-```
-
-
----
-
-## Get All Conversations by Bots
-**Endpoint : GET /api/bots/{botId}/conversations**
-
-
-Request Header : 
-
-```http
-api-key: SecretKey,
-authorization: AccessToken,
-```
-
-Response Body : 
-
-```json
-// Success response
-data:{
-    "status":200,
-    "conversation":[
-        {
-            "conversationID":"unique",
-            "room":"unique",
-            "CreatedAt":"TimeStamp",
-            "UpdatedAt":"TimeStamp",
-        },
-        {
-            "conversationID":"unique",
-            "room":"unique",
-            "CreatedAt":"TimeStamp",
-            "UpdatedAt":"TimeStamp"
-        },
-    ],
-    "pagination": {
-            "page": 1,
-            "pageSize": 2,
-            "totalPages": 5,
-            "totalItems": 10
-    }
-    
-}
-```
-```json
-// Error response
-data:{
-    "status":401,
-    "error":"Unathorized",
-}
-```
-
----
-
-## Create Messages
-**Endpoint : POST /api/bots/{botId}/conversations/{conversationId}/messages**
-
-
-Request Body : 
-
-```json
-{
-    "message":"Toko Ini Berjualan apa saja?",
-    "type":"strangger"
-}
-```
-
-Request Header : 
-
-```http
-api-key: SecretKey,
-```
-
-```json
-// Error response
-data:{
-    "status":400,
-    "message":"Validation Error",
-}
-```
-
-```json
-// Error response
-data:{
-    "status":505,
-    "error":"Internal Server Error",
-}
-```
-
-
----
-
-## Get All Messages by Conversation
-**Endpoint : GET /api/bots/{botId}/conversations/{conversationId}/messages**
-
-Request Header : 
-
-```http
-api-key: SecretKey,
-authorization: AccessToken,
-```
-
-Response Body : 
-
-```json
-// Success response
-data:{
-    "status":200,
-    "messages":[
-        {
-            "message":"Toko Ini Berjualan apa saja?",
-            "type":"strangger"
-        },
-        {
-            "message":"Toko Ini Berjualan Baju dan Celana?",
-            "type":"Bot"
-        },
-    ],
-    "pagination": {
-            "page": 1,
-            "pageSize": 2,
-            "totalPages": 5,
-            "totalItems": 10
-    }
-    
-    
-}
-```
-```json
-// Error response
-data:{
-    "status":401,
-    "error":"Unathorized",
-}
-```

@@ -21,19 +21,7 @@ describe('PromptsRouteTest', () => {
 
     app = moduleFixture.createNestApplication();
 
-    const isTest = process.env.NODE_ENV === 'test';
-
     app.use(cookieParser());
-
-    app.use((req, res, next) => {
-      res.cookie = ((original) => (name, value, options) => {
-        if (isTest) {
-          options = { ...options, secure: false }; // override secure saat test
-        }
-        return original.call(res, name, value, options);
-      })(res.cookie);
-      next();
-    });
 
     app.useGlobalFilters(new HttpFilter());
     app.useGlobalFilters(new ValidationFilter());
@@ -102,6 +90,7 @@ describe('PromptsRouteTest', () => {
         .send({
           name: 'test',
           prompt: 'test',
+          llm: 'test',
           userId: user?.id,
         })
         .set('Cookie', [`access_token=${accessToken}`]);
@@ -110,6 +99,7 @@ describe('PromptsRouteTest', () => {
       expect(response.body.message).toBe('Prompt created succesfully!!');
       expect(response.body.data.name).toBe('test');
       expect(response.body.data.prompt).toBe('test');
+      expect(response.body.data.llm).toBe('test');
     });
     it('should be rejected if request is invalid', async () => {
       const accessToken = await test.getAccessToken();
@@ -119,6 +109,7 @@ describe('PromptsRouteTest', () => {
           name: '',
           prompt: '',
           userId: '',
+          llm: '',
         })
         .set('Cookie', [`access_token=${accessToken}`]);
 
@@ -130,7 +121,7 @@ describe('PromptsRouteTest', () => {
         .post('/api/prompts')
         .send({
           name: 'test',
-          modelName: 'Llama8.0',
+          llm: 'test',
           prompt: 'testAowkoawkoak',
           userId: 'aokwoakowkoakw',
         });
@@ -144,6 +135,7 @@ describe('PromptsRouteTest', () => {
         .send({
           name: 'test',
           prompt: 'testAowkoawkoak',
+          llm: 'test',
           userId: 'aokwoakowkoakw',
         })
         .set('Cookie', [`access_token=Invalid_Token`]);
@@ -158,6 +150,7 @@ describe('PromptsRouteTest', () => {
           name: 'test',
           prompt: 'testAowkoawkoak',
           userId: 'aokwoakowkoakw',
+          llm: 'test',
         })
         .set('Cookie', [
           'access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJjZTZmODUxYi1kNjNjLTQwYzUtOWRiOS0xZTY1Mzg3NjVjZjYiLCJpYXQiOjE3NjE2NzQ4NjksImV4cCI6MTc2MTY3NTc2OX0.MS4KXwAUWNdCTeT21F9kSOoPqdrQoZ__0wSIbGtJzEY',
@@ -179,6 +172,7 @@ describe('PromptsRouteTest', () => {
       expect(response.status).toBe(200);
       expect(response.body.data.name).toBe('test');
       expect(response.body.data.prompt).toBe('test');
+      expect(response.body.data.llm).toBe('test');
     });
 
     it('should be rejected if prommptId is invalid', async () => {
@@ -201,6 +195,7 @@ describe('PromptsRouteTest', () => {
         .send({
           name: '',
           prompt: '',
+          llm: '',
         })
         .set('Cookie', [`access_token=${accessToken}`]);
 
@@ -214,6 +209,7 @@ describe('PromptsRouteTest', () => {
         .send({
           name: 'test',
           prompt: 'test',
+          llm: 'test',
         })
         .set('Cookie', [`access_token=${accessToken}`]);
 
@@ -228,6 +224,7 @@ describe('PromptsRouteTest', () => {
         .send({
           name: 'test',
           prompt: 'test',
+          llm: 'test updated',
         })
         .set('Cookie', [`access_token=${accessToken}`]);
 
@@ -235,6 +232,7 @@ describe('PromptsRouteTest', () => {
       expect(response.body.message).toBe('Prompt updated succesfully!!');
       expect(response.body.data.name).toBe('test');
       expect(response.body.data.prompt).toBe('test');
+      expect(response.body.data.llm).toBe('test updated');
     });
     it('patch should be rejected if unathorized', async () => {
       const response = await request(app.getHttpServer())
@@ -242,6 +240,7 @@ describe('PromptsRouteTest', () => {
         .send({
           name: 'test',
           prompt: 'testAowkoawkoak',
+          llm: 'test',
         });
 
       expect(response.status).toBe(401);
@@ -254,6 +253,7 @@ describe('PromptsRouteTest', () => {
         .send({
           name: 'test',
           prompt: 'testAowkoawkoak',
+          llm: 'test',
         })
         .set('Cookie', [`access_token=Invalid_TOken`]);
 
@@ -266,6 +266,7 @@ describe('PromptsRouteTest', () => {
         .send({
           name: 'test',
           prompt: 'testAowkoawkoak',
+          llm: 'test',
         })
         .set('Cookie', [
           'access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJjZTZmODUxYi1kNjNjLTQwYzUtOWRiOS0xZTY1Mzg3NjVjZjYiLCJpYXQiOjE3NjE2NzQ4NjksImV4cCI6MTc2MTY3NTc2OX0.MS4KXwAUWNdCTeT21F9kSOoPqdrQoZ__0wSIbGtJzEY',

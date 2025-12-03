@@ -32,7 +32,7 @@ export class MessageService {
 
     const data = await this.prismaService.message.findMany({
       where: {
-        conversationId: query.conversationId,
+        conversationId: conversationId,
       },
       skip: (Number(page) - 1) * Number(limit),
       take: Number(limit),

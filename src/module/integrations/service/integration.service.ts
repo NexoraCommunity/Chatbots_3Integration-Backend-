@@ -86,13 +86,7 @@ export class Integrationservice {
     }
   }
 
-  async getIntegration(query: IntegrationApi): Promise<Integration[]> {
-    const IntegrationValid: IntegrationApi = this.validationService.validate(
-      IntegrationsValidation.Integration,
-      query,
-    );
-    if (!IntegrationValid) throw new HttpException('Validation Error', 400);
-
+  async getIntegration(): Promise<Integration[]> {
     const data = await this.prismaService.integration.findMany();
 
     return data;

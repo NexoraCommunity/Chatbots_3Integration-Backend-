@@ -7,12 +7,10 @@ export class BotApi {
   bot_name: string;
   llm: string;
   model: string;
-  type: string;
 }
 
 export class changeBot {
   id: string;
-  userId: string;
   promptId: string;
   llm: string;
   model: string;

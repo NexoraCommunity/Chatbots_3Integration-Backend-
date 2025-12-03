@@ -21,19 +21,8 @@ describe('UserRouteTest', () => {
 
     app = moduleFixture.createNestApplication();
 
-    const isTest = process.env.NODE_ENV === 'test';
-
     app.use(cookieParser());
 
-    app.use((req, res, next) => {
-      res.cookie = ((original) => (name, value, options) => {
-        if (isTest) {
-          options = { ...options, secure: false };
-        }
-        return original.call(res, name, value, options);
-      })(res.cookie);
-      next();
-    });
     app.useGlobalFilters(new HttpFilter());
     app.useGlobalFilters(new ValidationFilter());
     app.useGlobalFilters(new JwtFilter());

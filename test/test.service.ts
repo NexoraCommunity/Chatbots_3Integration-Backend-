@@ -14,6 +14,16 @@ export class testService {
     });
 
     if (!user) return;
+    await this.prismaService.userIntegration.deleteMany({
+      where: {
+        isconneted: true,
+      },
+    });
+    await this.prismaService.integration.deleteMany({
+      where: {
+        name: 'test',
+      },
+    });
     await this.prismaService.account.deleteMany({
       where: {
         providerAccountId: 'testnexoraoraora@gmail.com',
@@ -40,6 +50,16 @@ export class testService {
       },
     });
     await this.prismaService.prompt.deleteMany({
+      where: {
+        name: 'test',
+      },
+    });
+    await this.prismaService.product.deleteMany({
+      where: {
+        name: 'test',
+      },
+    });
+    await this.prismaService.category.deleteMany({
       where: {
         name: 'test',
       },
@@ -153,6 +173,69 @@ export class testService {
     const data = await this.prismaService.message.findFirst({
       where: {
         message: 'test',
+      },
+    });
+    return data;
+  }
+  // Integration Test Service
+  async getIntegration() {
+    const data = await this.prismaService.integration.findFirst({
+      where: {
+        name: 'test',
+      },
+    });
+    return data;
+  }
+  // UserIntegration Test Service
+  async getUserIntegration() {
+    const data = await this.prismaService.userIntegration.findFirst({
+      where: {
+        isconneted: true,
+      },
+    });
+    return data;
+  }
+
+  // Category Test Service
+  async getCategory() {
+    const data = await this.prismaService.category.findFirst({
+      where: {
+        name: 'test',
+      },
+    });
+    return data;
+  }
+
+  // Product Test Service
+  async getProduct() {
+    const data = await this.prismaService.product.findFirst({
+      where: {
+        name: 'test',
+      },
+    });
+    return data;
+  }
+  // Variant Test Service
+  async getVariantOption() {
+    const data = await this.prismaService.variantOption.findFirst({
+      where: {
+        name: 'test',
+      },
+    });
+    return data;
+  }
+  async getVariantValue() {
+    const data = await this.prismaService.variantValue.findFirst({
+      where: {
+        value: 'test',
+      },
+    });
+    return data;
+  }
+  async getProductVariant(productId) {
+    const data = await this.prismaService.productVariant.findFirst({
+      where: {
+        productId: productId,
       },
     });
     return data;

@@ -24,13 +24,15 @@ export class ConversationService {
     const ConversationValid: GetModelConversation =
       this.validationService.validate(ConversationValidation.Pagination, query);
     if (!ConversationValid) throw new HttpException('Validation Error', 400);
-    const { page, limit, integrationType } = ConversationValid;
+    const { page, limit, integrationType, userId, botId } = ConversationValid;
     if (integrationType == '' || !integrationType)
       throw new HttpException('Validation Error', 400);
 
     const data = await this.prismaService.conversation.findMany({
       where: {
         integrationType: integrationType,
+        userId: String(userId || null),
+        botId: String(botId || null),
       },
       skip: (Number(page) - 1) * Number(limit),
       take: Number(limit),
@@ -108,11 +110,17 @@ export class ConversationService {
     });
 
     if (checkRoom) return checkRoom;
+    const bot = await this.prismaService.bot.findFirst({
+      where: {
+        id: ConversationValid.botId,
+      },
+    });
 
     const data = await this.prismaService.conversation.create({
       data: {
         botId: ConversationValid.botId,
         integrationType: req.integrationType,
+        userId: bot?.userId,
         room: ConversationValid.room,
       },
     });

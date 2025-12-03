@@ -29,12 +29,25 @@ export class VariantController {
     private productVariantService: ProductVariantService,
   ) {}
   //  --- ProductVariant ---
-  @Post('productVariant')
+
+  @Get('productVariant')
+  @HttpCode(200)
+  async getProductVariant(
+    @Query() query,
+  ): Promise<WebResponse<ProductVariant[]>> {
+    const data =
+      await this.productVariantService.getProductVariantByProductId(query);
+    return {
+      data: data,
+      status: '200',
+    };
+  }
+  @Post('productVariant/generate')
   @HttpCode(200)
   async generateProductVariant(
-    @Body() query,
+    @Body() body,
   ): Promise<WebResponse<ProductVariant[]>> {
-    const data = await this.productVariantService.generateProductVariant(query);
+    const data = await this.productVariantService.generateProductVariant(body);
     return {
       data: data,
       message: 'ProductVariant generated succesfully!!',
@@ -58,7 +71,7 @@ export class VariantController {
       status: '200',
     };
   }
-  @Delete('product:id')
+  @Delete('productVariant/:id')
   @HttpCode(200)
   async deleteProduct(
     @Param('id') id: string,
@@ -109,7 +122,7 @@ export class VariantController {
     };
   }
 
-  @Delete('variantOption:id')
+  @Delete('variantOption/:id')
   @HttpCode(200)
   async deleteVariantOption(
     @Param('id') id: string,
@@ -157,7 +170,7 @@ export class VariantController {
     };
   }
 
-  @Delete('variantValue:id')
+  @Delete('variantValue/:id')
   @HttpCode(200)
   async deleteVariantValue(
     @Param('id') id: string,

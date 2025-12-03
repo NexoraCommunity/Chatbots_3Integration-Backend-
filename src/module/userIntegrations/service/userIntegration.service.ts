@@ -59,7 +59,7 @@ export class UserIntegrationService {
     const data = await this.prismaService.userIntegration.create({
       data: {
         ...UserIntegrationValid,
-        integrationId: Number(UserIntegrationValid.integrationId),
+        connectedAt: new Date(),
       },
     });
 

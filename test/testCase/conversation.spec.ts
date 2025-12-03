@@ -21,19 +21,7 @@ describe('ConversationsRouteTest', () => {
 
     app = moduleFixture.createNestApplication();
 
-    const isTest = process.env.NODE_ENV === 'test';
-
     app.use(cookieParser());
-
-    app.use((req, res, next) => {
-      res.cookie = ((original) => (name, value, options) => {
-        if (isTest) {
-          options = { ...options, secure: false };
-        }
-        return original.call(res, name, value, options);
-      })(res.cookie);
-      next();
-    });
 
     app.useGlobalFilters(new HttpFilter());
     app.useGlobalFilters(new ValidationFilter());
@@ -46,8 +34,11 @@ describe('ConversationsRouteTest', () => {
   describe('GET api/conversation', () => {
     it('should be accepted if user authentication and request valid', async () => {
       const accessToken = await test.getAccessToken();
+      const user = await test.getUser();
       const response = await request(app.getHttpServer())
-        .get(`/api/conversation?page=2&limit=2&integrationType=whatsapp`)
+        .get(
+          `/api/conversation?page=2&limit=2&integrationType=whatsapp&userId=${user?.id}`,
+        )
         .set('Cookie', [`access_token=${accessToken}`]);
 
       expect(response.status).toBe(200);

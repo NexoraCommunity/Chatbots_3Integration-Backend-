@@ -1,6 +1,3 @@
-import { Pagination } from './web.model';
-import { Integration } from '@prisma/client';
-
 export class IntegrationApi {
   name: string;
   type: string;

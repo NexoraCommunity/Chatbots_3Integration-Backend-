@@ -17,6 +17,14 @@ Request Body :
 
 ```
 
+| Field  | Example Value                        | Description                                  | Fill |
+|--------|--------------------------------------|----------------------------------------------|------|
+| firstName   | `Any`                                | Custom name (free text)                       | required|
+| lastName | `Any`                                | Custom name (free text)               | required |
+| email   | `example@gmail.com`, etc. | gmail           | required | 
+| password    | `password123` | userPassword  |  required |
+
+
 Response Body : 
 
 ```json

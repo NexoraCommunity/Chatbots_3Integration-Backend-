@@ -82,7 +82,7 @@ export class ProductController {
       status: '200',
     };
   }
-  @Delete('product:id')
+  @Delete('product/:id')
   @HttpCode(200)
   async deleteProduct(
     @Param('id') id: string,

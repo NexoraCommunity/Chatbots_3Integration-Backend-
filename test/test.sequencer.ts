@@ -14,6 +14,14 @@ export default class CustomSequencer extends Sequencer {
       'bot.spec',
       'conversation.spec',
       'message.spec',
+      'integration.spec.ts',
+      'userIntegration.spec.ts',
+      'category.spec.ts',
+      'product.spec.ts',
+      'variantOption.spec.ts',
+      'variantValue.spec.ts',
+      'productVariant.spec.ts',
+      'llm.spec.ts',
     ];
 
     return tests.sort((a, b) => {

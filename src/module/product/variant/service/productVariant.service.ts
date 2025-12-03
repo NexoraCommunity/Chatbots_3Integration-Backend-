@@ -22,7 +22,32 @@ export class ProductVariantService {
     );
   }
 
+  async getProductVariantByProductId(query): Promise<ProductVariant[]> {
+    if (!query.productId) throw new HttpException('Validation Error', 400);
+
+    const data = await this.prismaService.productVariant.findMany({
+      where: {
+        productId: query.productId,
+      },
+      include: {
+        values: {
+          include: {
+            value: {
+              include: {
+                option: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    return data;
+  }
+
   async generateProductVariant(req): Promise<ProductVariant[]> {
+    if (!req.productId || req.productId === '')
+      throw new HttpException('Validation Error!!', 400);
     const variantOptions = await this.prismaService.variantOption.findMany({
       where: {
         productId: req.productId,
@@ -81,7 +106,7 @@ export class ProductVariantService {
       return data;
     } catch (error) {
       if (String(error).includes('invalid_type')) throw error;
-      throw new HttpException('ProductId is Invalid', 400);
+      throw new HttpException('ProductVariantId is Invalid', 400);
     }
   }
   async deleteProductVariant(id: string) {
@@ -95,7 +120,7 @@ export class ProductVariantService {
       });
       return true;
     } catch (error) {
-      throw new HttpException('ProductId is Invalid', 400);
+      throw new HttpException('ProductVariantId is Invalid', 400);
     }
   }
 }

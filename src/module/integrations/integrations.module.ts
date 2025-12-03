@@ -12,6 +12,7 @@ import { AiWrapperModule } from '../aiWrapper/aiWrapper.module';
 import { integrationGateway } from './integration.gateway';
 import { Integrationservice } from './service/integration.service';
 import { BotModule } from '../bot/bot.module';
+import { IntegrationApisController } from './integrationApis.controller';
 
 @Module({
   imports: [
@@ -21,7 +22,7 @@ import { BotModule } from '../bot/bot.module';
     AiWrapperModule,
     BotModule,
   ],
-  controllers: [IntegrationsController],
+  controllers: [IntegrationsController, IntegrationApisController],
   providers: [
     FacebookApiService,
     WabaService,

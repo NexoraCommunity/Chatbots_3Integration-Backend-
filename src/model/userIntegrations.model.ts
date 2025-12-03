@@ -5,12 +5,10 @@ export class UserIntegrationApi {
 
 export class PostUserIntegration {
   userId: string;
-  integrationId: string;
-  connectedAt: Date;
+  integrationId: number;
   isconneted: boolean;
 }
 export class ChangeUserIntegration {
   id: string;
-  connectedAt: Date;
   isconneted: boolean;
 }

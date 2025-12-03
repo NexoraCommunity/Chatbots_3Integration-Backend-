@@ -13,7 +13,7 @@ export class VariantOptionService {
   ) {}
 
   async getVariantOptionByProductId(query): Promise<VariantOption[]> {
-    if (!query.Id) throw new HttpException('Validation Error', 400);
+    if (!query.productId) throw new HttpException('Validation Error', 400);
 
     const data = await this.prismaService.variantOption.findMany({
       where: {

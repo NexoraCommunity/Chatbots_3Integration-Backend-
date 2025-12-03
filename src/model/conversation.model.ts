@@ -19,7 +19,9 @@ export class ChangeConversation {
 }
 
 export class GetModelConversation {
-  integrationType: string;
+  integrationType?: string | null;
+  userId?: string | null;
+  botId?: string | null;
   page: string;
   limit: string;
 }

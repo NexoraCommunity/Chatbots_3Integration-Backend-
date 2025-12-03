@@ -109,6 +109,7 @@ export class PromptService {
 
     const res: PromptApi = {
       name: data.name,
+      llm: data.llm,
       prompt: data.prompt,
     };
 
@@ -133,6 +134,7 @@ export class PromptService {
       const res: PromptApi = {
         name: data.name,
         prompt: data.prompt,
+        llm: data.llm,
       };
       return res;
     } catch (error) {

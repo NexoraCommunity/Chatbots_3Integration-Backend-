@@ -34,7 +34,7 @@ export class CategoryController {
     };
   }
 
-  @Get('/admin/category')
+  @Get('/category')
   @HttpCode(200)
   async getMessageAdmin(
     @Query() query: GetModelCategory,

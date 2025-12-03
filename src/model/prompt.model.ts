@@ -4,16 +4,19 @@ import { Prompt } from '@prisma/client';
 export class PromptApi {
   name: string;
   prompt: string;
+  llm: string;
 }
 
 export class changePrompt {
   id: string;
   name: string;
   prompt: string;
+  llm: string;
 }
 export class postPrompt {
   userId: string;
   name: string;
+  llm: string;
   prompt: string;
 }
 
