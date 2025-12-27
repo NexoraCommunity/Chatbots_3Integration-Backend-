@@ -10,12 +10,23 @@ import {
   PromptApi,
 } from 'src/model/prompt.model';
 import { PromptValidation } from '../dto/prompt.validation';
+import { DocumentReaderService } from '../documentReader/documentReader.service';
+import { RecursiveCharacterTextSplitter } from '@langchain/textsplitters';
+import { XenovaEmbeddings } from 'src/module/aiWrapper/RagService/xenovaEmbbeding.service';
+import { vectorStoreService } from 'src/module/aiWrapper/RagService/vectoreStore.service';
 
 @Injectable()
 export class PromptService {
   constructor(
     private prismaService: PrismaService,
     private validationService: ValidationService,
+    private documentReaderService: DocumentReaderService,
+    private xenovaEmbbeding: XenovaEmbeddings,
+    private vectoreStore: vectorStoreService,
+    private splitter = new RecursiveCharacterTextSplitter({
+      chunkSize: 500,
+      chunkOverlap: 50,
+    }),
   ) {}
 
   async getPromptByUserId(
@@ -107,9 +118,27 @@ export class PromptService {
       data: PromptValid,
     });
 
+    const document = await this.documentReaderService.read(
+      PromptValid.filePath,
+    );
+
+    const splitedText = await this.splitter.createDocuments([document]);
+
+    const embeded = await this.xenovaEmbbeding.embedDocuments(
+      splitedText.map((d) => d.pageContent),
+    );
+
+    await this.vectoreStore.store(
+      embeded,
+      'Users',
+      PromptValid.userId + data.id,
+      document,
+    );
+
     const res: PromptApi = {
       name: data.name,
       llm: data.llm,
+      filePath: data.filePath,
       prompt: data.prompt,
     };
 
@@ -134,6 +163,7 @@ export class PromptService {
       const res: PromptApi = {
         name: data.name,
         prompt: data.prompt,
+        filePath: data.filePath,
         llm: data.llm,
       };
       return res;

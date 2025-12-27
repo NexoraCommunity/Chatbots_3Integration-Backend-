@@ -8,6 +8,8 @@ import {
   Patch,
   Post,
   Query,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
 import {
   ChangeProduct,
@@ -18,16 +20,23 @@ import {
 import { WebResponse } from 'src/model/web.model';
 import { ProductService } from './service/product.service';
 import { Product } from '@prisma/client';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { imageMulterConfig } from '../../interceptors/multer.interceptors';
 
 @Controller('api')
 export class ProductController {
   constructor(private productService: ProductService) {}
   @Post('product')
+  @UseInterceptors(FileInterceptor('image', imageMulterConfig))
   @HttpCode(200)
   async addNewProduct(
     @Body() body: PostProduct,
+    @UploadedFile() file: Express.Multer.File,
   ): Promise<WebResponse<ProductApi>> {
-    const data = await this.productService.addNewProduct(body);
+    const data = await this.productService.addNewProduct({
+      ...body,
+      image: `/uploads/image/${file}`,
+    });
     return {
       data: data,
       message: 'Product created succesfully!!',
@@ -70,12 +79,18 @@ export class ProductController {
   }
 
   @Patch('product/:id')
+  @UseInterceptors(FileInterceptor('image', imageMulterConfig))
   @HttpCode(200)
   async editProduct(
     @Body() body: ChangeProduct,
     @Param('id') id: string,
+    @UploadedFile() file: Express.Multer.File,
   ): Promise<WebResponse<ProductApi>> {
-    const data = await this.productService.editProduct({ ...body, id: id });
+    const data = await this.productService.editProduct({
+      ...body,
+      id: id,
+      image: `/uploads/image/${file}`,
+    });
     return {
       data: data,
       message: 'Product updated succesfully!!',

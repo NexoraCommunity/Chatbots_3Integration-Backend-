@@ -8,21 +8,30 @@ import {
   Patch,
   Post,
   Query,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
 import { PromptService } from './service/prompt.service';
 import { GetModelPrompt, postPrompt, PromptApi } from 'src/model/prompt.model';
 import { WebResponse } from 'src/model/web.model';
 import { Prompt } from '@prisma/client';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { tempFileMulterConfig } from '../../interceptors/multer.interceptors';
 
 @Controller('api')
 export class PromptController {
   constructor(private promptService: PromptService) {}
   @Post('prompts')
+  @UseInterceptors(FileInterceptor('image', tempFileMulterConfig))
   @HttpCode(200)
   async addNewPrompt(
     @Body() body: postPrompt,
+    @UploadedFile() file: Express.Multer.File,
   ): Promise<WebResponse<PromptApi>> {
-    const data = await this.promptService.addNewPrompt(body);
+    const data = await this.promptService.addNewPrompt({
+      ...body,
+      filePath: `/uploads/file/${file}`,
+    });
     return {
       data: data,
       message: 'Prompt created succesfully!!',
@@ -65,12 +74,18 @@ export class PromptController {
   }
 
   @Patch('prompts/:id')
+  @UseInterceptors(FileInterceptor('image', tempFileMulterConfig))
   @HttpCode(200)
   async editPrompt(
     @Body() body: PromptApi,
     @Param('id') id: string,
+    @UploadedFile() file: Express.Multer.File,
   ): Promise<WebResponse<PromptApi>> {
-    const data = await this.promptService.editPrompt({ ...body, id: id });
+    const data = await this.promptService.editPrompt({
+      ...body,
+      id: id,
+      filePath: `/uploads/file/${file}`,
+    });
     return {
       data: data,
       message: 'Prompt updated succesfully!!',

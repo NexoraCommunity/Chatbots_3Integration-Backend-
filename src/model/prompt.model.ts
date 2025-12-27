@@ -5,6 +5,7 @@ export class PromptApi {
   name: string;
   prompt: string;
   llm: string;
+  filePath: string;
 }
 
 export class changePrompt {
@@ -12,11 +13,13 @@ export class changePrompt {
   name: string;
   prompt: string;
   llm: string;
+  filePath: string;
 }
 export class postPrompt {
   userId: string;
   name: string;
   llm: string;
+  filePath: string;
   prompt: string;
 }
 

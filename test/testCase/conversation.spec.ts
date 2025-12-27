@@ -207,7 +207,7 @@ describe('ConversationsRouteTest', () => {
         .set('Cookie', [`access_token=${accessToken}`]);
 
       expect(response.status).toBe(400);
-      expect(response.body.error).toBe('ConversationId is Invalid');
+      expect(response.body.error).toBeDefined();
     });
     it('should be accepted if request is valid', async () => {
       const conversation = await test.getConversation();

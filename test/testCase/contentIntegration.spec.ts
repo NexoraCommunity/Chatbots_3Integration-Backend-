@@ -10,7 +10,7 @@ import { testService } from '../test.service';
 import { JwtFilter } from 'src/filter/jwt.filter';
 import cookieParser from 'cookie-parser';
 
-describe('ProductRouteTest', () => {
+describe('ContentIntegrationRouteTest', () => {
   let app: INestApplication<App>;
   let test: testService;
 
@@ -31,12 +31,12 @@ describe('ProductRouteTest', () => {
     await app.init();
   });
 
-  describe('GET api/product?page=2&limit=2&userId=oko', () => {
-    it('should be accepted if user authentication and request valid', async () => {
-      const user = await test.getUser();
+  describe('GET api/contentIntegration', () => {
+    it('should be accepted if content authentication and request valid', async () => {
+      const userIntegration = await test.getUserIntegration();
       const accessToken = await test.getAccessToken();
       const response = await request(app.getHttpServer())
-        .get(`/api/product?page=2&limit=2&userId=${user?.id}`)
+        .get(`/api/contentIntegration?userIntegrationId=${userIntegration?.id}`)
         .set('Cookie', [`access_token=${accessToken}`]);
 
       expect(response.status).toBe(200);
@@ -45,7 +45,7 @@ describe('ProductRouteTest', () => {
 
     it('get should be rejected if unathorized', async () => {
       const response = await request(app.getHttpServer()).get(
-        '/api/product?page=2&limit=2',
+        '/api/contentIntegration',
       );
 
       expect(response.status).toBe(401);
@@ -55,15 +55,15 @@ describe('ProductRouteTest', () => {
       const accessToken = await test.getAccessToken();
 
       const response = await request(app.getHttpServer())
-        .get('/api/product')
+        .get('/api/contentIntegration')
         .set('Cookie', [`access_token=${accessToken}`]);
 
       expect(response.status).toBe(400);
-      expect(response.body.error).toBeDefined();
+      expect(response.body.error).toBe('Validation Error');
     });
     it('get should be rejected if accessToken is invalid', async () => {
       const response = await request(app.getHttpServer())
-        .get('/api/product?page=2&limit=2&userId=okow')
+        .get('/api/contentIntegration')
         .set('Cookie', [`access_token=Invalid`]);
 
       expect(response.status).toBe(400);
@@ -71,7 +71,7 @@ describe('ProductRouteTest', () => {
     });
     it('get should be rejected if accessToken is expired', async () => {
       const response = await request(app.getHttpServer())
-        .get('/api/product?page=2&limit=2&userId=okow')
+        .get('/api/contentIntegration')
         .set('Cookie', [
           'access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJjZTZmODUxYi1kNjNjLTQwYzUtOWRiOS0xZTY1Mzg3NjVjZjYiLCJpYXQiOjE3NjE2NzQ4NjksImV4cCI6MTc2MTY3NTc2OX0.MS4KXwAUWNdCTeT21F9kSOoPqdrQoZ__0wSIbGtJzEY',
         ]);
@@ -81,50 +81,65 @@ describe('ProductRouteTest', () => {
     });
   });
 
-  describe('POST /api/product', () => {
+  describe('POST /api/contentIntegration', () => {
     it('should be posted if request is valid', async () => {
-      const category = await test.getCategory();
-      const user = await test.getUser();
+      const userIntegration = await test.getUserIntegration();
       const accessToken = await test.getAccessToken();
       const response = await request(app.getHttpServer())
-        .post('/api/product')
+        .post('/api/contentIntegration')
         .send({
-          userId: user?.id,
-          categoryId: category?.id,
-          name: 'test',
-          description: 'test',
-          price: 10000,
-          stock: 30,
-          weight: 3,
-          image: 'test',
-          sku: 'test',
+          type: 'LLM',
+          configJson: {
+            apiKey: 'testapikey123',
+            provider: 'groq',
+            model: 'test',
+          },
+          userIntegrationId: userIntegration?.id,
         })
         .set('Cookie', [`access_token=${accessToken}`]);
 
       expect(response.status).toBe(200);
-      expect(response.body.message).toBe('Product created succesfully!!');
-      expect(response.body.data.name).toBe('test');
-      expect(response.body.data.description).toBe('test');
-      expect(response.body.data.price).toBe(10000);
-      expect(response.body.data.stock).toBe(30);
-      expect(response.body.data.weight).toBe(3);
-      expect(response.body.data.image).toBe('/uploads/image/undefined');
-      expect(response.body.data.sku).toBe('test');
+      expect(response.body.message).toBe(
+        'ContentIntegration created succesfully!!',
+      );
+      expect(response.body.data.type).toBe('LLM');
+      expect(response.body.data.configJson.apiKey).toBe('testapikey123');
+      expect(response.body.data.configJson.provider).toBe('groq');
+      expect(response.body.data.configJson.model).toBe('test');
+    });
+    it('should be posted if request is valid', async () => {
+      const userIntegration = await test.getUserIntegration();
+      const accessToken = await test.getAccessToken();
+      const response = await request(app.getHttpServer())
+        .post('/api/contentIntegration')
+        .send({
+          type: 'LLM',
+          configJson: {
+            accessToken: 'testapikey123',
+            botName: 'test',
+            provider: 'botFather',
+          },
+          userIntegrationId: userIntegration?.id,
+        })
+        .set('Cookie', [`access_token=${accessToken}`]);
+
+      expect(response.status).toBe(200);
+      expect(response.body.message).toBe(
+        'ContentIntegration created succesfully!!',
+      );
+      expect(response.body.data.type).toBe('LLM');
+      expect(response.body.data.configJson.accessToken).toBe('testapikey123');
+      expect(response.body.data.configJson.provider).toBe('botFather');
+      expect(response.body.data.configJson.botName).toBe('test');
     });
     it('should be rejected if request is invalid', async () => {
       const accessToken = await test.getAccessToken();
       const response = await request(app.getHttpServer())
-        .post('/api/product')
+        .post('/api/contentIntegration')
         .send({
-          userId: '',
-          categoryId: '',
-          name: '',
-          description: '',
-          price: 0,
-          stock: 0,
-          weight: 3,
-          image: '',
-          sku: '',
+          type: '',
+          configJson: {},
+          userIntegrationId: '',
         })
         .set('Cookie', [`access_token=${accessToken}`]);
 
@@ -133,17 +148,11 @@ describe('ProductRouteTest', () => {
     });
     it('post should be rejected if unathorized', async () => {
       const response = await request(app.getHttpServer())
-        .post('/api/product')
+        .post('/api/contentIntegration')
         .send({
-          userId: '',
-          categoryId: '',
-          name: '',
-          description: '',
-          price: 0,
-          stock: 0,
-          weight: 3,
-          image: '',
-          sku: '',
+          type: '',
+          configJson: {},
+          userIntegrationId: '',
         });
 
       expect(response.status).toBe(401);
@@ -151,17 +160,11 @@ describe('ProductRouteTest', () => {
     });
     it('post should be rejected if accessToken is invalid', async () => {
       const response = await request(app.getHttpServer())
-        .post('/api/product')
+        .post('/api/contentIntegration')
         .send({
-          userId: '',
-          categoryId: '',
-          name: '',
-          description: '',
-          price: 0,
-          stock: 0,
-          weight: 3,
-          image: '',
-          sku: '',
+          type: '',
+          configJson: {},
+          userIntegrationId: '',
         })
         .set('Cookie', [`access_token=Invalid_Token`]);
 
@@ -172,17 +175,11 @@ describe('ProductRouteTest', () => {
       const bot = await test.getBot();
 
       const response = await request(app.getHttpServer())
-        .post('/api/product')
+        .post('/api/contentIntegration')
         .send({
-          userId: '',
-          categoryId: '',
-          name: '',
-          description: '',
-          price: 0,
-          stock: 0,
-          weight: 3,
-          image: '',
-          sku: '',
+          type: '',
+          configJson: {},
+          userIntegrationId: '',
         })
         .set('Cookie', [
           'access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJjZTZmODUxYi1kNjNjLTQwYzUtOWRiOS0xZTY1Mzg3NjVjZjYiLCJpYXQiOjE3NjE2NzQ4NjksImV4cCI6MTc2MTY3NTc2OX0.MS4KXwAUWNdCTeT21F9kSOoPqdrQoZ__0wSIbGtJzEY',
@@ -193,51 +190,42 @@ describe('ProductRouteTest', () => {
     });
   });
 
-  describe('GET /api/product/:id', () => {
-    it('should be accepted if user authentication', async () => {
-      const product = await test.getProduct();
+  describe('GET /api/contentIntegration/:id', () => {
+    it('should be accepted if content authentication', async () => {
+      const contentIntegration = await test.getContentIntegration();
       const accessToken = await test.getAccessToken();
       const response = await request(app.getHttpServer())
-        .get(`/api/product/${String(product?.id)}`)
+        .get(`/api/contentIntegration/${String(contentIntegration?.id)}`)
         .set('Cookie', [`access_token=${accessToken}`]);
 
       expect(response.status).toBe(200);
-      expect(response.body.data.name).toBe('test');
-      expect(response.body.data.description).toBe('test');
-      expect(response.body.data.price).toBe(10000);
-      expect(response.body.data.stock).toBe(30);
-      expect(response.body.data.weight).toBe(3);
-      expect(response.body.data.image).toBe('/uploads/image/undefined');
-      expect(response.body.data.sku).toBe('test');
+      expect(response.body.data.type).toBe('LLM');
+      expect(response.body.data.configJson.apiKey).toBe('testapikey123');
+      expect(response.body.data.configJson.provider).toBe('groq');
+      expect(response.body.data.configJson.model).toBe('test');
     });
 
-    it('should be rejected if productId is invalid', async () => {
+    it('should be rejected if contentIntegrationId is invalid', async () => {
       const accessToken = await test.getAccessToken();
       const response = await request(app.getHttpServer())
-        .get(`/api/product/aokwokwowk`)
+        .get(`/api/contentIntegration/aokwokwowk`)
         .set('Cookie', [`access_token=${accessToken}`]);
 
       expect(response.status).toBe(400);
-      expect(response.body.error).toBe('ProductId is Invalid');
+      expect(response.body.error).toBe('ContentIntegrationId is Invalid');
     });
   });
 
-  describe('PATCH /api/product/:id', () => {
+  describe('PATCH /api/contentIntegration/:id', () => {
     it('should be rejected if request is invalid', async () => {
-      const product = await test.getProduct();
+      const contentIntegration = await test.getContentIntegration();
       const accessToken = await test.getAccessToken();
       const response = await request(app.getHttpServer())
-        .patch(`/api/product/${product?.id}`)
+        .patch(`/api/contentIntegration/${contentIntegration?.id}`)
         .send({
-          userId: '',
-          categoryId: '',
-          name: '',
-          description: '',
-          price: 0,
-          stock: 0,
-          weight: 3,
-          image: '',
-          sku: '',
+          type: '',
+          configJson: {},
+          userIntegrationId: '',
         })
         .set('Cookie', [`access_token=${accessToken}`]);
 
@@ -245,66 +233,52 @@ describe('ProductRouteTest', () => {
       expect(response.body.error).toBeDefined();
     });
     it('should be rejected if Id is not found', async () => {
-      const category = await test.getCategory();
       const accessToken = await test.getAccessToken();
       const response = await request(app.getHttpServer())
-        .patch(`/api/product/155`)
+        .patch(`/api/contentIntegration/1`)
         .send({
-          categoryId: category?.id,
-          name: 'test',
-          description: 'test updated',
-          price: 10000,
-          stock: 30,
-          weight: 3,
-          image: '/uploads/image/undefined',
-          sku: 'test updated',
+          type: '',
+          configJson: {},
+          userIntegrationId: '',
         })
         .set('Cookie', [`access_token=${accessToken}`]);
 
       expect(response.status).toBe(400);
-      expect(response.body.error).toBe('ProductId is Invalid');
+      expect(response.body.error).toBe('ContentIntegrationId is Invalid');
     });
     it('should be accepted if request is valid', async () => {
-      const product = await test.getProduct();
-      const category = await test.getCategory();
+      const contentIntegration = await test.getContentIntegration();
       const accessToken = await test.getAccessToken();
       const response = await request(app.getHttpServer())
-        .patch(`/api/product/${product?.id}`)
+        .patch(`/api/contentIntegration/${contentIntegration?.id}`)
         .send({
-          categoryId: category?.id,
-          name: 'test',
-          description: 'test updated',
-          price: 10000,
-          stock: 30,
-          weight: 3,
-          image: '/uploads/image/undefined',
-          sku: 'test updated',
+          type: 'LLM',
+          configJson: {
+            apiKey: 'testapikey123 updated',
+            provider: 'groq',
+            model: 'test updated',
+          },
         })
         .set('Cookie', [`access_token=${accessToken}`]);
 
       expect(response.status).toBe(200);
-      expect(response.body.message).toBe('Product updated succesfully!!');
-      expect(response.body.data.name).toBe('test');
-      expect(response.body.data.description).toBe('test updated');
-      expect(response.body.data.price).toBe(10000);
-      expect(response.body.data.stock).toBe(30);
-      expect(response.body.data.weight).toBe(3);
-      expect(response.body.data.image).toBe('/uploads/image/undefined');
-      expect(response.body.data.sku).toBe('test updated');
+      expect(response.body.message).toBe(
+        'ContentIntegration updated succesfully!!',
+      );
+      expect(response.body.data.type).toBe('LLM');
+      expect(response.body.data.configJson.apiKey).toBe(
+        'testapikey123 updated',
+      );
+      expect(response.body.data.configJson.model).toBe('test updated');
+      expect(response.body.data.configJson.provider).toBe('groq');
     });
     it('patch should be rejected if unathorized', async () => {
       const response = await request(app.getHttpServer())
-        .patch('/api/product/aowkoakowko')
+        .patch('/api/contentIntegration/aowkoakowko')
         .send({
-          userId: '',
-          categoryId: '',
-          name: '',
-          description: '',
-          price: 0,
-          stock: 0,
-          weight: 3,
-          image: '',
-          sku: '',
+          type: '',
+          configJson: {},
+          userIntegrationId: '',
         });
 
       expect(response.status).toBe(401);
@@ -313,17 +287,11 @@ describe('ProductRouteTest', () => {
 
     it('patch should be rejected if accessToken is invalid', async () => {
       const response = await request(app.getHttpServer())
-        .patch('/api/product/akwokwokw')
+        .patch('/api/contentIntegration/akwokwokw')
         .send({
-          userId: '',
-          categoryId: '',
-          name: '',
-          description: '',
-          price: 0,
-          stock: 0,
-          weight: 3,
-          image: '',
-          sku: '',
+          type: '',
+          configJson: {},
+          userIntegrationId: '',
         })
         .set('Cookie', [`access_token=Invalid_TOken`]);
 
@@ -332,17 +300,11 @@ describe('ProductRouteTest', () => {
     });
     it('patch should be rejected if accessToken is expired', async () => {
       const response = await request(app.getHttpServer())
-        .patch('/api/product/aokwokoa')
+        .patch('/api/contentIntegration/aokwokoa')
         .send({
-          userId: '',
-          categoryId: '',
-          name: '',
-          description: '',
-          price: 0,
-          stock: 0,
-          weight: 3,
-          image: '',
-          sku: '',
+          type: '',
+          configJson: {},
+          userIntegrationId: '',
         })
         .set('Cookie', [
           'access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJjZTZmODUxYi1kNjNjLTQwYzUtOWRiOS0xZTY1Mzg3NjVjZjYiLCJpYXQiOjE3NjE2NzQ4NjksImV4cCI6MTc2MTY3NTc2OX0.MS4KXwAUWNdCTeT21F9kSOoPqdrQoZ__0wSIbGtJzEY',
@@ -353,29 +315,29 @@ describe('ProductRouteTest', () => {
     });
   });
 
-  describe('DELETE /api/product/:id', () => {
+  describe('DELETE /api/contentIntegration/:id', () => {
     it('should be rejected if Id is not found', async () => {
       const accessToken = await test.getAccessToken();
       const response = await request(app.getHttpServer())
-        .delete(`/api/product/aakwokwowkok`)
+        .delete(`/api/contentIntegration/aakwokwowkok`)
         .set('Cookie', [`access_token=${accessToken}`]);
 
       expect(response.status).toBe(400);
-      expect(response.body.error).toBe('ProductId is Invalid');
+      expect(response.body.error).toBe('ContentIntegrationId is Invalid');
     });
     // it('should be accepted if request is valid', async () => {
-    // const product = await test.getProduct();
+    // const contentIntegration = await test.getContentIntegration();
     //   const accessToken = await test.getAccessToken();
     //   const response = await request(app.getHttpServer())
-    //     .delete(`/api/product/${product?.id}`)
+    //     .delete(`/api/contentIntegration/${contentIntegration?.id}`)
     //     .set('Cookie', [`access_token=${accessToken}`]);
 
     //   expect(response.status).toBe(200);
-    //   expect(response.body.message).toBe('Product deleted succesfully!!');
+    //   expect(response.body.message).toBe('ContentIntegration deleted succesfully!!');
     // });
     it('delete should be rejected if unathorized', async () => {
       const response = await request(app.getHttpServer()).delete(
-        '/api/product/aowkowko',
+        '/api/contentIntegration/aowkowko',
       );
 
       expect(response.status).toBe(401);
@@ -384,7 +346,7 @@ describe('ProductRouteTest', () => {
 
     it('delete should be rejected if accessToken is invalid', async () => {
       const response = await request(app.getHttpServer())
-        .delete('/api/product/okwkaowkoawk')
+        .delete('/api/contentIntegration/okwkaowkoawk')
         .set('Cookie', [`access_token=Invalid_Token`]);
 
       expect(response.status).toBe(400);
@@ -392,7 +354,7 @@ describe('ProductRouteTest', () => {
     });
     it('delete should be rejected if accessToken is expired', async () => {
       const response = await request(app.getHttpServer())
-        .delete('/api/product/akwokwkwoaowwoa')
+        .delete('/api/contentIntegration/akwokwkwoaowwoa')
         .set('Cookie', [
           'access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJjZTZmODUxYi1kNjNjLTQwYzUtOWRiOS0xZTY1Mzg3NjVjZjYiLCJpYXQiOjE3NjE2NzQ4NjksImV4cCI6MTc2MTY3NTc2OX0.MS4KXwAUWNdCTeT21F9kSOoPqdrQoZ__0wSIbGtJzEY',
         ]);

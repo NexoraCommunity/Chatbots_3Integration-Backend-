@@ -32,7 +32,7 @@ model User {
 
 model Account {
   id                Int      @id @default(autoincrement())
-  userId            String   @default(uuid())
+  userId            String
   provider          String   @db.VarChar(50)
   providerAccountId String   @db.VarChar(100)
   accessToken       String?  @db.VarChar(255)
@@ -45,12 +45,14 @@ model Account {
 
   user User @relation(fields: [userId], references: [id], onUpdate: Cascade)
 
+  @@unique([provider, providerAccountId])
+  @@index([userId])
   @@map("Account")
 }
 
 model UserSubcribtion {
   id        String   @id @default(uuid())
-  userId    String   @default(uuid())
+  userId    String
   startDate DateTime
   endDate   DateTime
   user      User     @relation(fields: [userId], references: [id], onUpdate: Cascade)
@@ -103,9 +105,8 @@ model WhatsappKeys {
 model WhatsaapBussinessAccount {
   id          String        @id @default(uuid())
   accessToken String        @db.VarChar(255)
-  userId      String        @default(uuid())
-  facebookId  String        @default(uuid())
-  displayName String        @db.VarChar(100)
+  userId      String
+  facebookId  String
   email       String?       @db.VarChar(100)
   businessId  String        @db.VarChar(255)
   user        User          @relation(fields: [userId], references: [id], onUpdate: Cascade)
@@ -117,7 +118,7 @@ model WhatsaapBussinessAccount {
 model NumberPhone {
   id                         String                   @id @default(uuid())
   numberPhoneId              String
-  whatsaapBussinessAccountId String                   @default(uuid())
+  whatsaapBussinessAccountId String
   WhatsaapBussinessAccount   WhatsaapBussinessAccount @relation(fields: [whatsaapBussinessAccountId], references: [id], onUpdate: Cascade)
 
   @@map("NumberPhone")
@@ -125,7 +126,7 @@ model NumberPhone {
 
 model UserOtp {
   id        Int      @id @default(autoincrement())
-  userId    String   @default(uuid())
+  userId    String
   otpCode   String   @db.VarChar(10)
   isUsed    Boolean  @default(false)
   expiresAt DateTime
@@ -133,28 +134,32 @@ model UserOtp {
 
   user User @relation(fields: [userId], references: [id], onUpdate: Cascade)
 
+  @@index([userId])
+  @@index([expiresAt])
   @@map("UserOTP")
 }
 
 model Prompt {
   id        String   @id @default(uuid())
-  userId    String   @default(uuid())
+  userId    String
   name      String   @db.VarChar(100)
   llm       String   @db.VarChar(100)
   prompt    String   @db.LongText
+  filePath  String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   user User  @relation(fields: [userId], references: [id], onUpdate: Cascade)
   bot  Bot[]
 
+  @@index([userId])
   @@map("Prompt")
 }
 
 model Bot {
   id              String   @id @default(uuid())
-  userId          String   @default(uuid())
-  promptId        String   @default(uuid())
+  userId          String
+  promptId        String
   bot_name        String   @db.VarChar(100)
   is_active       Boolean? @default(false)
   type            String   @db.VarChar(50)
@@ -170,13 +175,15 @@ model Bot {
   order        Order[]
   conversation Conversation[]
 
+  @@index([userId])
+  @@index([is_active])
   @@map("BOT")
 }
 
 model Conversation {
   id              String    @id @default(uuid())
-  botId           String    @default(uuid())
-  userId          String    @default(uuid())
+  botId           String
+  userId          String
   room            String    @db.VarChar(100)
   integrationType String    @db.VarChar(100)
   messages        Message[]
@@ -185,12 +192,14 @@ model Conversation {
 
   bot Bot @relation(fields: [botId], references: [id], onUpdate: Cascade)
 
+  @@index([botId])
+  @@index([botId, createdAt])
   @@map("Conversation")
 }
 
 model Message {
   id             String   @id @default(uuid())
-  conversationId String   @default(uuid())
+  conversationId String
   message        String
   type           String   @db.VarChar(100)
   role           String
@@ -199,13 +208,14 @@ model Message {
 
   conversation Conversation @relation(fields: [conversationId], references: [id], onUpdate: Cascade)
 
+  @@index([conversationId, createdAt])
   @@map("Message")
 }
 
 model Product {
   id          String   @id @default(uuid())
-  userId      String   @default(uuid())
-  categoryId  String   @default(uuid())
+  userId      String
+  categoryId  String
   name        String   @db.VarChar(100)
   description String   @db.VarChar(1000)
   price       Float    @db.Float()
@@ -223,6 +233,8 @@ model Product {
   user     User     @relation(fields: [userId], references: [id], onUpdate: Cascade)
   category Category @relation(fields: [categoryId], references: [id], onUpdate: Cascade)
 
+  @@index([userId])
+  @@index([categoryId])
   @@map("Product")
 }
 
@@ -305,7 +317,7 @@ model Customer {
 
 model CustomerNote {
   id         Int    @id @default(autoincrement())
-  customerId String @default(uuid())
+  customerId String
   content    String @db.VarChar(1000)
 
   createdAt DateTime @default(now())
@@ -317,8 +329,8 @@ model CustomerNote {
 
 model Order {
   id          String   @id @default(uuid())
-  customerId  String   @default(uuid())
-  botId       String   @default(uuid())
+  customerId  String
+  botId       String
   status      String   @db.VarChar(50)
   totalAmount Int
   createdAt   DateTime @default(now())
@@ -328,12 +340,15 @@ model Order {
   customer    Customer      @relation(fields: [customerId], references: [id], onUpdate: Cascade)
   bot         Bot           @relation(fields: [botId], references: [id], onUpdate: Cascade)
 
+  @@index([customerId])
+  @@index([botId])
+  @@index([status])
   @@map("Order")
 }
 
 model Transaction {
   id            String   @id @default(uuid())
-  orderId       String   @default(uuid())
+  orderId       String
   amount        Int
   status        String   @db.VarChar(50)
   transactionId String   @db.VarChar(225)
@@ -341,13 +356,15 @@ model Transaction {
 
   order Order @relation(fields: [orderId], references: [id], onUpdate: Cascade)
 
+  @@index([orderId])
+  @@index([transactionId])
   @@map("Transaction")
 }
 
 model OrderItem {
   id        String   @id @default(uuid())
-  orderId   String   @default(uuid())
-  productId String   @default(uuid())
+  orderId   String
+  productId String
   quantity  Int
   price     Float
   createdAt DateTime @default(now())
@@ -373,7 +390,7 @@ model Integration {
 
 model UserIntegration {
   id     String @id @default(uuid())
-  userId String @default(uuid())
+  userId String
 
   connectedAt   DateTime
   isconneted    Boolean
@@ -382,6 +399,27 @@ model UserIntegration {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  integration Integration? @relation(fields: [integrationId], references: [id], onUpdate: Cascade)
-  user        User?        @relation(fields: [userId], references: [id], onUpdate: Cascade)
+  integration         Integration?         @relation(fields: [integrationId], references: [id], onUpdate: Cascade)
+  user                User?                @relation(fields: [userId], references: [id], onUpdate: Cascade)
+  contentIntegrations ContentIntegration[]
+
+  @@unique([userId, integrationId])
+  @@index([userId])
+  @@index([integrationId])
+  @@map("UserIntegration")
+}
+
+model ContentIntegration {
+  id                String          @id @default(uuid())
+  userIntegrationId String
+  userIntegration   UserIntegration @relation(fields: [userIntegrationId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  type              String          @db.VarChar(100)
+  configJson        Json
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userIntegrationId])
+  @@index([userIntegrationId, type])
+  @@map("ContentIntegration")
 }

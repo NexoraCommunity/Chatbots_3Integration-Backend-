@@ -9,8 +9,8 @@ export class MessageValidation {
   });
   static readonly chageMessage: ZodType = z.object({
     id: z.string().min(1).max(225),
-    message: z.string().min(1).max(50000).optional(),
-    type: z.string().min(1).max(50).optional(),
+    message: z.string().min(1).max(50000),
+    type: z.string().min(1).max(50),
   });
   static readonly Pagination: ZodType = z.object({
     page: z.string().min(1).max(50),

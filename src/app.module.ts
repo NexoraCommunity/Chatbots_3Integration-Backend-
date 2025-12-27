@@ -14,6 +14,7 @@ import { AiWrapperModule } from './module/aiWrapper/aiWrapper.module';
 import { ProductModule } from './module/product/product.module';
 import { CategoryModule } from './module/category/category.module';
 import { userIntegrationModule } from './module/userIntegrations/userIntegration.module';
+import { ContentIntegrationModule } from './module/contentIntegration/contentIntegration.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { userIntegrationModule } from './module/userIntegrations/userIntegration
     PassportModule.register({ session: true }),
     MessageModule,
     ConversationModule,
+    ContentIntegrationModule,
   ],
   controllers: [],
   providers: [AppGateway],
