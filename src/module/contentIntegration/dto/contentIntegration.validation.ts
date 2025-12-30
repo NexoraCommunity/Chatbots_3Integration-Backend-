@@ -8,7 +8,6 @@ const GeminiConfigSchema = z.object({
 const GroqConfigSchema = z.object({
   provider: z.literal('groq'),
   apiKey: z.string().min(10),
-  model: z.string().min(1),
 });
 const OpenRouterConfigSchema = z.object({
   provider: z.literal('openRouter'),
@@ -27,6 +26,11 @@ const BotFatherConfigSchema = z.object({
   botName: z.string().min(1),
   accessToken: z.string().min(10),
 });
+const WabaConfigSchema = z.object({
+  provider: z.literal('whatsapp Bussiness'),
+  numberPhoneId: z.string().min(1),
+  whatsaapBussinessAccountId: z.string().min(1).max(225),
+});
 
 export const ConfigByTypeSchema = z.discriminatedUnion('provider', [
   GeminiConfigSchema,
@@ -34,6 +38,7 @@ export const ConfigByTypeSchema = z.discriminatedUnion('provider', [
   OpenRouterConfigSchema,
   WebsiteConfigSchema,
   BotFatherConfigSchema,
+  WabaConfigSchema,
 ]);
 
 export class ContentIntegrationValidation {

@@ -32,7 +32,6 @@ export class FacebookService {
         userId: detailUsers.userId,
         accessToken: hassedToken,
         businessId: detailUsers.wabaId,
-        displayName: detailUsers.name,
         email: detailUsers.email,
         facebookId: detailUsers.facebookId,
       },
@@ -43,12 +42,27 @@ export class FacebookService {
       detailUsers.wabaId,
     );
 
+    const data = await this.prismaService.userIntegration.create({
+      data: {
+        integrationId: 2,
+        name: 'whatsapp Bussiness',
+        isconnected: true,
+        userId: detailUsers.userId,
+        connectedAt: new Date(Date.now()),
+      },
+    });
+
     const phoneData = numberPhones.map((phone) => ({
-      numberPhoneId: phone.id,
-      whatsaapBussinessAccountId: newWaba.id,
+      userIntegrationId: data.id,
+      type: 'chatPlatform',
+      configJson: {
+        provider: 'whatsapp Bussiness',
+        numberPhoneId: phone.id,
+        whatsaapBussinessAccountId: newWaba.id,
+      },
     }));
 
-    await this.prismaService.numberPhone.createMany({
+    await this.prismaService.contentIntegration.createMany({
       data: phoneData,
       skipDuplicates: true,
     });

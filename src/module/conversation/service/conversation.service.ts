@@ -116,11 +116,13 @@ export class ConversationService {
       },
     });
 
+    if (!bot) throw new HttpException('Validation Error', 400);
+
     const data = await this.prismaService.conversation.create({
       data: {
         botId: ConversationValid.botId,
         integrationType: req.integrationType,
-        userId: bot?.userId,
+        userId: String(bot?.userId),
         room: ConversationValid.room,
       },
     });

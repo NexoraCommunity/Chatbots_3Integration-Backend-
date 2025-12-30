@@ -12,12 +12,16 @@ import {
 } from 'src/model/bot.model';
 import { BotValidation } from '../dto/bot.validation';
 import { Bot } from '@prisma/client';
+import { LlmService } from 'src/module/llm/LlmService/llm.service';
+import { UserIntegrationService } from 'src/module/userIntegrations/service/userIntegration.service';
 
 @Injectable()
 export class BotService {
   constructor(
     private prismaService: PrismaService,
     private readonly validationService: ValidationService,
+    private llmService: LlmService,
+    private userIntegrationService: UserIntegrationService,
   ) {}
 
   async getBotByUserId(query: GetModelbot): Promise<PaginationResponseBot> {
@@ -103,6 +107,17 @@ export class BotService {
 
     if (!BotValid) throw new HttpException('Validation Error', 400);
 
+    const models = await this.llmService.getTextLLMModels();
+    const llmList = ['openAI', 'groq', 'gemini'];
+
+    if (!llmList.includes(BotValid.llm))
+      throw new HttpException('Validation Error', 400);
+
+    const availableModels = models[BotValid.llm];
+
+    if (!availableModels.includes(BotValid.model))
+      throw new HttpException('Validation Error', 400);
+
     const data = await this.prismaService.bot.create({
       data: BotValid,
     });
@@ -120,6 +135,18 @@ export class BotService {
       );
 
       if (!BotValid) throw new HttpException('Validation Error', 400);
+
+      const models = await this.llmService.getTextLLMModels();
+      const llmList = ['openAI', 'groq', 'gemini'];
+
+      if (!llmList.includes(BotValid.llm))
+        throw new HttpException('Validation Error', 400);
+
+      const availableModels = models[BotValid.llm];
+
+      if (!availableModels.includes(BotValid.model))
+        throw new HttpException('Validation Error', 400);
+
       const data = await this.prismaService.bot.update({
         where: {
           id: req.id,
@@ -156,7 +183,7 @@ export class BotService {
         id: req.botId,
       },
       data: {
-        is_active: status,
+        isActive: status,
         data: req.data,
         numberPhoneWaba: req.numberPhoneWaba,
       },

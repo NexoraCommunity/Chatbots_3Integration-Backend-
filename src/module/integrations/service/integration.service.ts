@@ -25,7 +25,7 @@ export class Integrationservice {
       IntegrationsValidation.StartBot,
       req,
     );
-    const { data, type, numberPhoneWaba, botId } = Reqvalid;
+    const { data, type, botId } = Reqvalid;
     if (!Reqvalid) {
       sendUpdate({ message: 'Validation Error' });
     }
@@ -40,14 +40,14 @@ export class Integrationservice {
       sendUpdate({ message: 'Cannot Find BotID' });
       return;
     }
-    if (type === 'whatsapp' && numberPhoneWaba === undefined) {
+    if (type === 'baileys') {
       this.baileysService.startBot(botId, sendUpdate);
-    } else if (type === 'telegram') {
+    } else if (type === 'botFather') {
       this.botFatherService.startBot(String(data), botId, sendUpdate);
     } else {
       sendUpdate({
         message: 'Bot Connected To Waba',
-        data: { type: 'whatsapp', botId: req.botId },
+        data: { type: 'whatsapp Bussiness', botId: req.botId },
       });
       await this.botService.updateBotStatus(req, true);
     }
@@ -58,7 +58,7 @@ export class Integrationservice {
       IntegrationsValidation.StartBot,
       req,
     );
-    const { data, type, numberPhoneWaba, botId } = Reqvalid;
+    const { type, botId } = Reqvalid;
     if (!Reqvalid) {
       sendUpdate({ message: 'Validation Error' });
     }
@@ -73,14 +73,14 @@ export class Integrationservice {
       return;
     }
 
-    if (type === 'whatsapp' && numberPhoneWaba === undefined) {
+    if (type === 'baileys') {
       this.baileysService.disableBot(botId, sendUpdate);
-    } else if (type === 'telegram') {
+    } else if (type === 'botFather') {
       this.botFatherService.disableBot(botId, sendUpdate);
     } else {
       sendUpdate({
         message: 'Bot Disconnected To Waba',
-        data: { type: 'whatsapp', botId: req.botId },
+        data: { type: 'whatsapp Bussiness', botId: req.botId },
       });
       await this.botService.updateBotStatus(req, false);
     }

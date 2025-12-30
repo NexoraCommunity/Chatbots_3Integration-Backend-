@@ -6,5 +6,6 @@ import { UserIntegrationService } from './service/userIntegration.service';
   imports: [],
   controllers: [UserIntegrationController],
   providers: [UserIntegrationService],
+  exports: [UserIntegrationService],
 })
 export class userIntegrationModule {}

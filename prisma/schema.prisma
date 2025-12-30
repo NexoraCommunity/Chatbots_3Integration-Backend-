@@ -16,7 +16,7 @@ model User {
   password                 String?                    @db.VarChar(100)
   picture                  String?                    @db.VarChar(100)
   role                     String?                    @default("user")
-  prompt                   Prompt[]
+  agent                    Agent[]
   bot                      Bot[]
   authProvider             Account[]
   userOtp                  UserOtp[]
@@ -139,13 +139,14 @@ model UserOtp {
   @@map("UserOTP")
 }
 
-model Prompt {
+model Agent {
   id        String   @id @default(uuid())
   userId    String
   name      String   @db.VarChar(100)
   llm       String   @db.VarChar(100)
-  prompt    String   @db.LongText
-  filePath  String
+  agent     String   @db.VarChar(100)
+  dataTrain String?  @db.LongText
+  filePath  String   @db.VarChar(200)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -153,15 +154,15 @@ model Prompt {
   bot  Bot[]
 
   @@index([userId])
-  @@map("Prompt")
+  @@map("Agent")
 }
 
 model Bot {
   id              String   @id @default(uuid())
   userId          String
-  promptId        String
-  bot_name        String   @db.VarChar(100)
-  is_active       Boolean? @default(false)
+  agentId         String
+  botName         String   @db.VarChar(100)
+  isActive        Boolean? @default(false)
   type            String   @db.VarChar(50)
   data            String?  @db.VarChar(700)
   llm             String   @db.VarChar(100)
@@ -171,12 +172,12 @@ model Bot {
   updatedAt       DateTime @updatedAt
 
   user         User           @relation(fields: [userId], references: [id], onUpdate: Cascade)
-  prompt       Prompt         @relation(fields: [promptId], references: [id], onUpdate: Cascade)
+  agent        Agent          @relation(fields: [agentId], references: [id], onUpdate: Cascade)
   order        Order[]
   conversation Conversation[]
 
   @@index([userId])
-  @@index([is_active])
+  @@index([isActive])
   @@map("BOT")
 }
 
@@ -393,7 +394,8 @@ model UserIntegration {
   userId String
 
   connectedAt   DateTime
-  isconneted    Boolean
+  isconnected   Boolean
+  name          String   @db.VarChar(50)
   integrationId Int
 
   createdAt DateTime @default(now())

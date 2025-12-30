@@ -31,8 +31,8 @@ export class BaileysService implements OnModuleInit {
   async onModuleInit() {
     const botActives = await this.prismaService.bot.findMany({
       where: {
-        is_active: true,
-        type: 'whatsapp',
+        isActive: true,
+        type: 'baileys',
         numberPhoneWaba: null,
       },
     });
@@ -52,7 +52,7 @@ export class BaileysService implements OnModuleInit {
       if (this.bots.has(botId)) {
         cb?.({
           message: 'Bot Connected To Whatsapp',
-          type: 'whatsapp',
+          type: 'baileys',
           botId: botId,
         });
         return;
@@ -76,7 +76,7 @@ export class BaileysService implements OnModuleInit {
           cb?.({
             message: 'QrCode Generated',
             qrCode: QrCode,
-            type: 'whatsapp',
+            type: 'baileys',
             botId: botId,
           });
         }
@@ -84,7 +84,7 @@ export class BaileysService implements OnModuleInit {
           this.bots.set(botId, sock);
           cb?.({
             message: 'Bot Connected To Whatsapp',
-            type: 'whatsapp',
+            type: 'baileys',
             botId: botId,
           });
           await this.botService.updateBotStatus(
@@ -112,7 +112,7 @@ export class BaileysService implements OnModuleInit {
 
             cb?.({
               message: `[${botId}] Logout total, perlu scan ulang. refresh halaman untuk generate qrCode`,
-              type: 'whatsapp',
+              type: 'baileys',
               botId: botId,
             });
             await this.logOut(botId);
@@ -127,7 +127,7 @@ export class BaileysService implements OnModuleInit {
         sendUpdate?.({
           message: 'QR berhasil discan. Connecting...',
           botId: botId,
-          type: 'whatsapp',
+          type: 'baileys',
         });
       };
 
@@ -181,7 +181,7 @@ export class BaileysService implements OnModuleInit {
       cb?.({
         message: `Cannot StartBot Because: ${err}`,
         botId: botId,
-        type: 'whatsapp',
+        type: 'baileys',
       });
     }
   }
@@ -197,7 +197,7 @@ export class BaileysService implements OnModuleInit {
       sendUpdate?.({
         message: 'Bot Disconnected to Whatsapp',
         botId: botId,
-        type: 'whatsapp',
+        type: 'baileys',
       });
       this.bots.delete(botId);
 

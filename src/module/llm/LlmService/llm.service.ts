@@ -6,40 +6,69 @@ import axios from 'axios';
 export class LlmService {
   constructor(private readonly config: ConfigService) {}
 
-  async getOpenRouterModels() {
+  // Model yang BUKAN text generation
+  private readonly TEXT_LLM_BLACKLIST = [
+    'image',
+    'audio',
+    'whisper',
+    'tts',
+    'embedding',
+    'search',
+    'research',
+    'guard',
+    'safeguard',
+    'prompt-guard',
+  ];
+
+  private isTextLLM(modelId: string): boolean {
+    const lower = modelId.toLowerCase();
+    return !this.TEXT_LLM_BLACKLIST.some((keyword) => lower.includes(keyword));
+  }
+
+  async getTextLLMModels() {
     try {
-      const openAiModels = await axios.get(
-        'https://openrouter.ai/api/v1/models',
-        {
+      const [openRouterRes, groqRes, geminiRes] = await Promise.all([
+        axios.get('https://openrouter.ai/api/v1/models', {
           headers: {
             Authorization: `Bearer ${this.config.get('OPEN_ROUTER_API_KEY')}`,
           },
-        },
-      );
-      const groqModels = await axios.get(
-        'https://api.groq.com/openai/v1/models',
-        {
+        }),
+        axios.get('https://api.groq.com/openai/v1/models', {
           headers: {
             Authorization: `Bearer ${this.config.get('GROQ_API_KEY')}`,
           },
-        },
-      );
+        }),
+        axios.get(
+          `https://generativelanguage.googleapis.com/v1/models?key=${this.config.get(
+            'GEMINI_API_KEY',
+          )}`,
+        ),
+      ]);
 
-      const geminiModels = await axios.get(
-        `https://generativelanguage.googleapis.com/v1/models?key=${this.config.get(
-          'GEMINI_API_KEY',
-        )}`,
-      );
+      // =========================
+      // OPENROUTER / OPENAI
+      // =========================
+      const openAI = (openRouterRes.data?.data || [])
+        .map((m) => m.id)
+        .filter((id) => id.startsWith('openai/'))
+        .filter((id) => this.isTextLLM(id))
+        .sort();
 
-      const models = openAiModels.data.data || [];
+      // =========================
+      // GROQ
+      // =========================
+      const groq = (groqRes.data?.data || [])
+        .map((m) => m.id)
+        .filter((id) => this.isTextLLM(id))
+        .sort();
 
-      const openAI = models
-        .filter((m) => m.id.startsWith('openai/'))
-        .map((m) => m.id);
-
-      const groq = groqModels.data.data.map((m) => m.id);
-
-      const gemini = geminiModels.data.models.map((m) => m.name);
+      // =========================
+      // GEMINI
+      // =========================
+      const gemini = (geminiRes.data?.models || [])
+        .map((m) => m.name)
+        .filter((id) => this.isTextLLM(id))
+        .sort();
 
       return {
         openAI,
@@ -48,7 +77,7 @@ export class LlmService {
       };
     } catch (err) {
       throw new Error(
-        `OpenRouter Error: ${err.response?.data?.error || err.message}`,
+        `LLM Model Fetch Error: ${err.response?.data?.error || err.message}`,
       );
     }
   }

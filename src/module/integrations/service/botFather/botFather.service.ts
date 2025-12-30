@@ -18,8 +18,8 @@ export class BotFatherService implements OnModuleInit {
   async onModuleInit() {
     const botActives = await this.prismaService.bot.findMany({
       where: {
-        is_active: true,
-        type: 'telegram',
+        isActive: true,
+        type: 'botFather',
       },
     });
 
@@ -49,7 +49,7 @@ export class BotFatherService implements OnModuleInit {
         cb?.({
           message: 'Unauthorization token invalid!!',
           botId: botId,
-          type: 'telegram',
+          type: 'botFather',
         });
         bot.stopPolling();
         this.disableBot(botId);
@@ -58,13 +58,13 @@ export class BotFatherService implements OnModuleInit {
       const Connection = () => {
         this.bots.set(botId, bot);
         this.botService.updateBotStatus(
-          { botId: botId, data: token, type: 'telegram' },
+          { botId: botId, data: token, type: 'botFather' },
           true,
         );
         cb?.({
           message: 'Bot Connected To Telegram',
           botId: botId,
-          type: 'telegram',
+          type: 'botFather',
         });
       };
 
@@ -85,7 +85,7 @@ export class BotFatherService implements OnModuleInit {
         cb?.({
           message: '❌ Invalid or deleted bot token ',
           botId,
-          type: 'telegram',
+          type: 'botFather',
         });
 
         this.disableBot(botId);
@@ -111,7 +111,7 @@ export class BotFatherService implements OnModuleInit {
       cb?.({
         message: `Cannot Connected Because: ${error}`,
         botId: botId,
-        type: 'telegram',
+        type: 'botFather',
       });
       return;
     }
@@ -124,7 +124,7 @@ export class BotFatherService implements OnModuleInit {
       sendUpdate?.({
         message: 'Bot Id Not Found',
         botId: botId,
-        type: 'telegram',
+        type: 'botFather',
       });
       return;
     }
@@ -133,7 +133,7 @@ export class BotFatherService implements OnModuleInit {
     sendUpdate?.({
       message: 'Bot Disconnected to Telegram',
       botId: botId,
-      type: 'telegram',
+      type: 'botFather',
     });
 
     try {
@@ -146,7 +146,7 @@ export class BotFatherService implements OnModuleInit {
       sendUpdate?.({
         message: `Error disabling bot Because: ${e}`,
         botId: botId,
-        type: 'telegram',
+        type: 'botFather',
       });
     }
   }

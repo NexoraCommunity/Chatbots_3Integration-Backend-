@@ -3,7 +3,7 @@ import { CommonModule } from './module/common/common.module';
 import { BotModule } from './module/bot/bot.module';
 import { IntegrationsModule } from './module/integrations/integrations.module';
 import { AuthModule } from './module/auth/auth.module';
-import { PromptModule } from './module/prompt/prompt.module';
+import { AgentModule } from './module/agent/agent.module';
 import { UserModule } from './module/user/user.module';
 import { PassportModule } from '@nestjs/passport';
 import { LlmModule } from './module/llm/llm.module';
@@ -24,7 +24,7 @@ import { ContentIntegrationModule } from './module/contentIntegration/contentInt
     ProductModule,
     IntegrationsModule,
     AuthModule,
-    PromptModule,
+    AgentModule,
     CategoryModule,
     userIntegrationModule,
     UserModule,

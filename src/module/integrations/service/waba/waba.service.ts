@@ -36,8 +36,8 @@ export class WabaService {
     const findWaba = await this.prismaService.bot.findFirst({
       where: {
         numberPhoneWaba: HookValid.numberPhoneId,
-        type: 'whatsapp',
-        is_active: true,
+        type: 'whatsapp Bussiness',
+        isActive: true,
       },
     });
 

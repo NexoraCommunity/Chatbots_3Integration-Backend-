@@ -23,6 +23,9 @@ export class UserIntegrationService {
       where: {
         userId: query.userId,
       },
+      include: {
+        contentIntegrations: true,
+      },
     });
     return data;
   }

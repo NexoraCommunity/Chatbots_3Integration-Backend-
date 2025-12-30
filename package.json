@@ -109,7 +109,8 @@
       "/node_modules/(?!p-queue|baileys)/"
     ],
     "moduleNameMapper": {
-      "^src/(.*)$": "<rootDir>/../src/$1"
+      "^src/(.*)$": "<rootDir>/../src/$1",
+      "^@xenova/transformers$": "<rootDir>/mockTransformer.ts"
     },
     "collectCoverageFrom": [
       "**/*.(t|j)s"

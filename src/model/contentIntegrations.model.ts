@@ -42,6 +42,11 @@ export interface botFatherConfig {
   botName: string;
   accessToken: string;
 }
+export interface WabaConfig {
+  provider: 'whatsapp Bussiness';
+  numberPhoneId: string;
+  whatsaapBussinessAccountId: string;
+}
 
 import { Prisma } from '@prisma/client';
 
@@ -54,4 +59,5 @@ export type ContentIntegrationConfig =
   | GroqConfig
   | OpenRouterConfig
   | botFatherConfig
-  | WebsiteConfig;
+  | WebsiteConfig
+  | WabaConfig;

@@ -6,16 +6,8 @@ import path from 'path';
 
 export const imageMulterConfig = {
   storage: diskStorage({
-    destination: '/uploads/images',
+    destination: path.join(process.cwd(), 'uploads', 'temp'),
     filename: async (req, file, cb) => {
-      if (req.params.id) {
-        if (req.body.image) {
-          await moveFiletoTemp(req.body.image);
-        } else {
-          await moveFiletoTemp(req.body.picture);
-        }
-      }
-
       const uniqueName = Date.now() + '-' + Math.round(Math.random() * 1e9);
       cb(null, uniqueName + extname(file.originalname));
     },
@@ -45,11 +37,8 @@ const allowedMimeTypes = [
 
 export const tempFileMulterConfig = {
   storage: diskStorage({
-    destination: '/uploads/file',
+    destination: path.join(process.cwd(), 'uploads', 'temp'),
     filename: async (req, file, cb) => {
-      if (req.params.id) {
-        await moveFiletoTemp(req.body.filePath);
-      }
       const unique = Date.now() + '-' + Math.random().toString(36).substring(2);
       cb(null, unique + extname(file.originalname));
     },
@@ -67,17 +56,19 @@ export const tempFileMulterConfig = {
   },
 };
 
-export const moveFiletoTemp = async (sourceDir: string): Promise<void> => {
-  const targetDir = path.join(process.cwd(), 'uploads', 'temp');
+export const moveFile = async (
+  sourceDir: string,
+  target: string,
+): Promise<void> => {
+  const sourcePath = path.join(process.cwd(), sourceDir);
 
-  await fs.mkdir(targetDir, { recursive: true });
+  const targetPathDir = path.join(process.cwd(), 'uploads', target);
 
-  const files = await fs.readdir(sourceDir);
-  if (!files.length) throw new Error('Source directory is empty');
+  await fs.mkdir(targetPathDir, { recursive: true });
 
-  const fileName = files[0];
-  const sourcePath = path.join(sourceDir, fileName);
-  const targetPath = path.join(targetDir, fileName);
+  const fileName = path.basename(sourcePath);
+
+  const targetPath = path.join(targetPathDir, fileName);
 
   await fs.rename(sourcePath, targetPath);
 };
