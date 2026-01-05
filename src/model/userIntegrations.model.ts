@@ -1,13 +1,13 @@
 export class UserIntegrationApi {
   connectedAt: Date;
   isconnected: boolean;
-  name: string;
+  provider: string;
 }
 
 export class PostUserIntegration {
   userId: string;
   integrationId: number;
-  name: string;
+  provider: string;
   isconnected: boolean;
 }
 export class ChangeUserIntegration {

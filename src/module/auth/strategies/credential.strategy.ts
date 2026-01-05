@@ -1,7 +1,7 @@
 import { HttpException, Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { PrismaService } from 'src/module/common/prisma.service';
-import { ValidationService } from 'src/module/common/validation.service';
+import { PrismaService } from 'src/module/prisma/service/prisma.service';
+import { ValidationService } from 'src/module/common/other/validation.service';
 import { Logger } from 'winston';
 import * as bcrypt from 'bcrypt';
 

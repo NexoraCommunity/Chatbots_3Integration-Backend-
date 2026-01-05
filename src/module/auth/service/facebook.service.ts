@@ -1,4 +1,4 @@
-import { PrismaService } from 'src/module/common/prisma.service';
+import { PrismaService } from 'src/module/prisma/service/prisma.service';
 import { FacebookOauth } from 'src/model/user.model';
 import { JwtService } from './jwt.service';
 import { HttpException, Injectable } from '@nestjs/common';
@@ -45,7 +45,7 @@ export class FacebookService {
     const data = await this.prismaService.userIntegration.create({
       data: {
         integrationId: 2,
-        name: 'whatsapp Bussiness',
+        provider: 'whatsapp Bussiness',
         isconnected: true,
         userId: detailUsers.userId,
         connectedAt: new Date(Date.now()),

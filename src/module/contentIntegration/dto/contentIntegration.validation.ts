@@ -2,15 +2,18 @@ import z, { ZodType } from 'zod';
 
 const GeminiConfigSchema = z.object({
   provider: z.literal('gemini'),
+  name: z.string().min(1),
   apiKey: z.string().min(10),
 });
 
 const GroqConfigSchema = z.object({
   provider: z.literal('groq'),
+  name: z.string().min(1),
   apiKey: z.string().min(10),
 });
 const OpenRouterConfigSchema = z.object({
   provider: z.literal('openRouter'),
+  name: z.string().min(1),
   apiKey: z.string().min(10),
 });
 

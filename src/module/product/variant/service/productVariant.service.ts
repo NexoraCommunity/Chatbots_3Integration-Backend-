@@ -1,11 +1,8 @@
-import { HttpException, Injectable } from '@nestjs/common';
+import { HttpException, Injectable, Query } from '@nestjs/common';
 import { ProductVariant } from '@prisma/client';
-import {
-  ChangeProductVariant,
-  ProductVariantApi,
-} from 'src/model/variant.model';
-import { PrismaService } from 'src/module/common/prisma.service';
-import { ValidationService } from 'src/module/common/validation.service';
+import { ChangeProductVariant } from 'src/model/variant.model';
+import { PrismaService } from 'src/module/prisma/service/prisma.service';
+import { ValidationService } from 'src/module/common/other/validation.service';
 import { VariantValidation } from '../dto/variant.validation';
 
 @Injectable()
@@ -43,6 +40,33 @@ export class ProductVariantService {
     });
 
     return data;
+  }
+
+  async getProductVariantById(id): Promise<ProductVariant> {
+    if (!id) throw new HttpException('Validation Error', 400);
+
+    try {
+      const data = await this.prismaService.productVariant.findUniqueOrThrow({
+        where: {
+          id: id,
+        },
+        include: {
+          values: {
+            include: {
+              value: {
+                include: {
+                  option: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      return data;
+    } catch (error) {
+      throw new HttpException('ProductVariantId is Invalid', 400);
+    }
   }
 
   async generateProductVariant(req): Promise<ProductVariant[]> {

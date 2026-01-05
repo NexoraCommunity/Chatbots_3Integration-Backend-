@@ -1,8 +1,8 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { FacebookApiService } from './facebookApi.service';
 import { PostMessage, WabaHook } from 'src/model/waba.model';
-import { ValidationService } from 'src/module/common/validation.service';
-import { PrismaService } from 'src/module/common/prisma.service';
+import { ValidationService } from 'src/module/common/other/validation.service';
+import { PrismaService } from 'src/module/prisma/service/prisma.service';
 import { AiService } from 'src/module/aiWrapper/service/aiWrapper.service';
 import { ConversationWrapper } from 'src/model/aiWrapper.model';
 import { IntegrationsValidation } from '../../dto/Integration.validation';

@@ -42,6 +42,17 @@ export class VariantController {
       status: '200',
     };
   }
+  @Get('productVariant/:id')
+  @HttpCode(200)
+  async getProductVariantById(
+    @Param('id') id: string,
+  ): Promise<WebResponse<ProductVariant>> {
+    const data = await this.productVariantService.getProductVariantById(id);
+    return {
+      data: data,
+      status: '200',
+    };
+  }
   @Post('productVariant/generate')
   @HttpCode(200)
   async generateProductVariant(

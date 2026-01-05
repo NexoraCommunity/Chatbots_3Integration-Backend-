@@ -1,7 +1,7 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { Product } from '@prisma/client';
-import { PrismaService } from 'src/module/common/prisma.service';
-import { ValidationService } from 'src/module/common/validation.service';
+import { PrismaService } from 'src/module/prisma/service/prisma.service';
+import { ValidationService } from 'src/module/common/other/validation.service';
 import {
   ChangeProduct,
   GetModelProduct,
@@ -10,6 +10,8 @@ import {
   ProductApi,
 } from 'src/model/product.model';
 import { ProductValidation } from '../dto/product.validation';
+import { moveFile } from 'src/interceptors/multer.interceptors';
+import path from 'path';
 
 @Injectable()
 export class ProductService {
@@ -115,7 +117,16 @@ export class ProductService {
       data: ProductValid,
     });
 
-    const res: ProductApi = data;
+    if (data) {
+      const replacePath = data.image.replace('image', 'temp');
+      await moveFile(replacePath, 'image');
+    }
+
+    const res: ProductApi = {
+      ...data,
+      price: Number(data.price),
+      weight: Number(data.weight),
+    };
 
     return res;
   }
@@ -128,6 +139,8 @@ export class ProductService {
       );
 
       if (!ProductValid) throw new HttpException('Validation Error', 400);
+
+      const find = await this.getProductbyId(ProductValid.id);
       const data = await this.prismaService.product.update({
         where: {
           id: req.id,
@@ -135,7 +148,17 @@ export class ProductService {
         data: ProductValid,
       });
 
-      const res: ProductApi = data;
+      if (find.image !== data.image) {
+        const replacePath = data.image.replace('image', 'temp');
+        await moveFile(replacePath, 'image');
+        await moveFile(find.image, 'temp');
+      }
+
+      const res: ProductApi = {
+        ...data,
+        price: Number(data.price),
+        weight: Number(data.weight),
+      };
       return res;
     } catch (error) {
       if (String(error).includes('invalid_type')) throw error;

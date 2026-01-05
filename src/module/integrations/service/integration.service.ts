@@ -3,8 +3,8 @@ import { BotFatherService } from './botFather/botFather.service';
 import { BaileysService } from './baileys/whatsaap.service';
 import { startBot } from 'src/model/bot.model';
 import { IntegrationsValidation } from '../dto/Integration.validation';
-import { ValidationService } from 'src/module/common/validation.service';
-import { PrismaService } from 'src/module/common/prisma.service';
+import { ValidationService } from 'src/module/common/other/validation.service';
+import { PrismaService } from 'src/module/prisma/service/prisma.service';
 import { BotService } from 'src/module/bot/service/bot.service';
 import { Integration } from '@prisma/client';
 import { ChangeIntegration, IntegrationApi } from 'src/model/integration.model';
@@ -25,7 +25,7 @@ export class Integrationservice {
       IntegrationsValidation.StartBot,
       req,
     );
-    const { data, type, botId } = Reqvalid;
+    const { data, type, botId, agentId } = Reqvalid;
     if (!Reqvalid) {
       sendUpdate({ message: 'Validation Error' });
     }

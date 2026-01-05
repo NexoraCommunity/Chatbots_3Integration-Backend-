@@ -57,18 +57,20 @@ export const tempFileMulterConfig = {
 };
 
 export const moveFile = async (
-  sourceDir: string,
-  target: string,
-): Promise<void> => {
-  const sourcePath = path.join(process.cwd(), sourceDir);
-
-  const targetPathDir = path.join(process.cwd(), 'uploads', target);
-
-  await fs.mkdir(targetPathDir, { recursive: true });
+  tempRelativePath: string,
+  targetFolder: 'file' | 'image' | 'temp',
+): Promise<string> => {
+  const sourcePath = path.resolve(process.cwd(), tempRelativePath);
 
   const fileName = path.basename(sourcePath);
 
-  const targetPath = path.join(targetPathDir, fileName);
+  const targetDir = path.resolve(process.cwd(), 'uploads', targetFolder);
+
+  await fs.mkdir(targetDir, { recursive: true });
+
+  const targetPath = path.join(targetDir, fileName);
 
   await fs.rename(sourcePath, targetPath);
+
+  return `uploads/${targetFolder}/${fileName}`;
 };

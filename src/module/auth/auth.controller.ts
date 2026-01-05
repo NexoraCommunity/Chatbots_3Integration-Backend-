@@ -12,7 +12,7 @@ import {
 } from '@nestjs/common';
 
 import { FacebookOauthGuard } from './guard/facebook.guard';
-import { PrismaService } from '../common/prisma.service';
+import { PrismaService } from '../prisma/service/prisma.service';
 import { JwtService } from './service/jwt.service';
 import { CredentialStrategy } from './strategies/credential.strategy';
 import { GoogleOauthGuard } from './guard/google-oauth.guard';
@@ -122,10 +122,7 @@ export class AuthController {
       maxAge: 1000 * 60 * 60 * 24,
     });
 
-    return res.redirect(
-      `${this.configService.get('FRONTEND')}/dashboard` ||
-        `http://localhost:3001/dashboard`,
-    );
+    return res.redirect(`http://localhost:3001/dashboard`);
   }
 
   @Get('facebook/login')

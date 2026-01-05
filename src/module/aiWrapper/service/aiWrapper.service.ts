@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ConversationWrapper } from 'src/model/aiWrapper.model';
-import { ValidationService } from 'src/module/common/validation.service';
+import { ValidationService } from 'src/module/common/other/validation.service';
 import { AiWrapperValidation } from '../dto/aiWrapper.validation';
 import { ConversationService } from 'src/module/conversation/service/conversation.service';
 import { MessageService } from 'src/module/message/service/message.service';

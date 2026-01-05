@@ -17,18 +17,18 @@ export class ChangeContentIntegration<T> {
 export interface GeminiConfig {
   provider: 'gemini';
   apiKey: string;
-  model: string;
+  name: string;
 }
 
 export interface GroqConfig {
   provider: 'groq';
+  name: string;
   apiKey: string;
-  model: string;
 }
 export interface OpenRouterConfig {
   provider: 'openRouter';
   apiKey: string;
-  model: string;
+  name: string;
 }
 
 export interface WebsiteConfig {

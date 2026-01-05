@@ -7,26 +7,23 @@ export class BotApi {
   data: string | null;
   numberPhoneWaba: string | null;
   botName: string;
-  llm: string;
-  model: string;
 }
 
 export class changeBot {
   id: string;
   agentId: string;
+  type: string;
+  userId: string;
   data: string | null;
   numberPhoneWaba: string | null;
-  llm: string;
-  model: string;
   botName: string;
 }
 export class startBot {
   botId: string;
   type: string;
   data?: string;
+  agentId: string;
   numberPhoneWaba?: string;
-  llm: string;
-  model: string;
 }
 
 export class botStatus {
@@ -47,8 +44,8 @@ export class postBot {
   agentId: string;
   botName: string;
   type: string;
-  llm: string;
-  model: string;
+  data: string | null;
+  numberPhoneWaba: string | null;
 }
 
 export class GetModelbot {

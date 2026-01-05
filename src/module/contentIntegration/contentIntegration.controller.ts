@@ -19,6 +19,10 @@ import { WebResponse } from 'src/model/web.model';
 import { ContentIntegration, Prisma } from '@prisma/client';
 import { ContentIntegrationService } from './service/contentIntegration.service';
 
+type ContentIntegrationResponse = Omit<ContentIntegration, 'configJson'> & {
+  configJson: ContentIntegrationConfig;
+};
+
 @Controller('api')
 export class ContentIntegrationController {
   constructor(private contentIntegrationService: ContentIntegrationService) {}
@@ -54,7 +58,7 @@ export class ContentIntegrationController {
   @HttpCode(200)
   async getContentIntegrationbyid(
     @Param('id') id: string,
-  ): Promise<WebResponse<ContentIntegration>> {
+  ): Promise<WebResponse<ContentIntegrationResponse>> {
     const data =
       await this.contentIntegrationService.getContentIntegrationbyId(id);
     return {

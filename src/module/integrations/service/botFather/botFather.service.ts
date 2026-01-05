@@ -3,7 +3,7 @@ import TelegramBot from 'node-telegram-bot-api';
 import { ConversationWrapper } from 'src/model/aiWrapper.model';
 import { AiService } from 'src/module/aiWrapper/service/aiWrapper.service';
 import { BotService } from 'src/module/bot/service/bot.service';
-import { PrismaService } from 'src/module/common/prisma.service';
+import { PrismaService } from 'src/module/prisma/service/prisma.service';
 
 @Injectable()
 export class BotFatherService implements OnModuleInit {

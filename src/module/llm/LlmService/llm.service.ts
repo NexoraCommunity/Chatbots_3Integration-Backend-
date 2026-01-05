@@ -45,26 +45,17 @@ export class LlmService {
         ),
       ]);
 
-      // =========================
-      // OPENROUTER / OPENAI
-      // =========================
       const openAI = (openRouterRes.data?.data || [])
         .map((m) => m.id)
         .filter((id) => id.startsWith('openai/'))
         .filter((id) => this.isTextLLM(id))
         .sort();
 
-      // =========================
-      // GROQ
-      // =========================
       const groq = (groqRes.data?.data || [])
         .map((m) => m.id)
         .filter((id) => this.isTextLLM(id))
         .sort();
 
-      // =========================
-      // GEMINI
-      // =========================
       const gemini = (geminiRes.data?.models || [])
         .map((m) => m.name)
         .filter((id) => this.isTextLLM(id))
