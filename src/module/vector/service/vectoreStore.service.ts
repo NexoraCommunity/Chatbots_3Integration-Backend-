@@ -41,7 +41,6 @@ export class VectorStoreService implements OnModuleInit {
   async onModuleInit() {
     const size = await this.getVectorSize();
 
-    await this.ensureCollection('AgentUserDataTrain', size);
     await this.ensureCollection('AgentUserProduct', size);
     await this.ensureCollection('AgentUserDocument', size);
   }

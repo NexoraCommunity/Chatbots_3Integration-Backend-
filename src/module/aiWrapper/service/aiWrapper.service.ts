@@ -4,6 +4,8 @@ import { ValidationService } from 'src/module/common/other/validation.service';
 import { AiWrapperValidation } from '../dto/aiWrapper.validation';
 import { ConversationService } from 'src/module/conversation/service/conversation.service';
 import { MessageService } from 'src/module/message/service/message.service';
+import { UserAgent } from '@prisma/client';
+import { CustomerServiceWorkFlow } from '../Workflow/customerService.workflow';
 
 @Injectable()
 export class AiService {
@@ -11,9 +13,10 @@ export class AiService {
     private validationService: ValidationService,
     private messageService: MessageService,
     private conversationService: ConversationService,
+    private customerServiceWorkFlow: CustomerServiceWorkFlow,
   ) {}
 
-  async wrapper(req: ConversationWrapper) {
+  async wrapper(req: ConversationWrapper, agent: UserAgent) {
     const ReqValid: ConversationWrapper = this.validationService.validate(
       AiWrapperValidation.aiWrapper,
       req,
@@ -31,7 +34,14 @@ export class AiService {
       message: ReqValid.message,
     });
 
-    const aiResponse = '';
+    let aiResponse = '';
+
+    if (agent.agent === 'customer-service') {
+      aiResponse = await this.customerServiceWorkFlow.workflow(
+        agent,
+        req.message,
+      );
+    }
 
     if (!aiResponse || aiResponse === '') return;
     await this.messageService.addNewMessage({

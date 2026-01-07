@@ -12,6 +12,7 @@ export class IntegrationsValidation {
     type: z.string().min(1).max(100),
     data: z.string().min(1).max(700).optional(),
     numberPhoneWaba: z.string().min(1).max(225).optional(),
+    agentId: z.string().min(1),
   });
   static readonly Integration: ZodType = z.object({
     name: z.string().min(1).max(100),

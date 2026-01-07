@@ -6,8 +6,9 @@ import { IntegrationsValidation } from '../dto/Integration.validation';
 import { ValidationService } from 'src/module/common/other/validation.service';
 import { PrismaService } from 'src/module/prisma/service/prisma.service';
 import { BotService } from 'src/module/bot/service/bot.service';
-import { Integration } from '@prisma/client';
+import { Integration, UserAgent } from '@prisma/client';
 import { ChangeIntegration, IntegrationApi } from 'src/model/integration.model';
+import { CryptoService } from 'src/module/common/other/crypto.service';
 
 @Injectable()
 export class Integrationservice {
@@ -17,6 +18,7 @@ export class Integrationservice {
     private baileysService: BaileysService,
     private validationService: ValidationService,
     private botService: BotService,
+    private cryptoService: CryptoService,
   ) {}
 
   // Bot Integrations
@@ -40,10 +42,22 @@ export class Integrationservice {
       sendUpdate({ message: 'Cannot Find BotID' });
       return;
     }
+
+    const findAgent = await this.findAgent(agentId);
+    if (!findAgent) {
+      sendUpdate({ message: 'Cannot Find AgentID' });
+      return;
+    }
+
     if (type === 'baileys') {
-      this.baileysService.startBot(botId, sendUpdate);
+      this.baileysService.startBot(botId, findAgent, sendUpdate);
     } else if (type === 'botFather') {
-      this.botFatherService.startBot(String(data), botId, sendUpdate);
+      this.botFatherService.startBot(
+        String(data),
+        botId,
+        findAgent,
+        sendUpdate,
+      );
     } else {
       sendUpdate({
         message: 'Bot Connected To Waba',
@@ -51,6 +65,20 @@ export class Integrationservice {
       });
       await this.botService.updateBotStatus(req, true);
     }
+  }
+
+  async findAgent(agentId: string) {
+    const findAgent = await this.prismaService.userAgent.findUnique({
+      where: {
+        id: agentId,
+      },
+    });
+
+    if (!findAgent) return false;
+
+    const apiKey = this.cryptoService.decrypt(findAgent.apiKey);
+
+    return { ...findAgent, apiKey: apiKey };
   }
 
   async disableBot(req: startBot, sendUpdate: (data: any) => void) {

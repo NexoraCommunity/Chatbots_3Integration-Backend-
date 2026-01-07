@@ -2,22 +2,30 @@ import { SubscribeMessage, WebSocketGateway } from '@nestjs/websockets';
 import { Socket } from 'socket.io';
 import { startBot } from 'src/model/bot.model';
 import { Integrationservice } from './service/integration.service';
-import { WebResponse } from 'src/model/web.model';
+import { CommonGateway } from '../common/common.gateway';
+import { Injectable } from '@nestjs/common';
 
 @WebSocketGateway({ cors: { origin: '*' } })
 export class integrationGateway {
-  constructor(private integrationService: Integrationservice) {}
+  constructor(
+    private integrationService: Integrationservice,
+    private commonGateway: CommonGateway,
+  ) {}
   @SubscribeMessage('startBot')
   async startBot(client: Socket, req: startBot) {
+    const userId = client.data.userId;
+    client.join(`user:${userId}`);
     this.integrationService.startBot(req, (update) => {
-      client.emit('bot', update);
+      this.commonGateway.emitToUser(userId, 'bot', update);
     });
   }
 
   @SubscribeMessage('disableBot')
   async disableBot(client: Socket, req: startBot) {
+    const userId = client.data.userId;
+    client.join(`user:${userId}`);
     this.integrationService.disableBot(req, (update) => {
-      client.emit('bot', update);
+      this.commonGateway.emitToUser(userId, 'bot', update);
     });
   }
 }

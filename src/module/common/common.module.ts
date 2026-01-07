@@ -9,11 +9,8 @@ import { CommonController } from './common.controller';
 import { DocumentReaderService } from '../embedding/service/documentReader.service';
 import { CommonGateway } from './common.gateway';
 import { AuthModule } from '../auth/auth.module';
-import {
-  redisClient,
-  redisPub,
-  redisSub,
-} from '../redis/service/redis.service';
+import { integrationGateway } from '../integrations/integration.gateway';
+import { IntegrationsModule } from '../integrations/integrations.module';
 
 @Global()
 @Module({
@@ -22,6 +19,7 @@ import {
       isGlobal: true,
     }),
     AuthModule,
+    IntegrationsModule,
   ],
   controllers: [CommonController],
   providers: [
@@ -29,6 +27,7 @@ import {
     ValidationService,
     CryptoService,
     XenovaEmbeddings,
+    integrationGateway,
     VectorStoreService,
     CommonGateway,
     DocumentReaderService,
@@ -36,6 +35,7 @@ import {
   exports: [
     PrismaService,
     ValidationService,
+    integrationGateway,
     XenovaEmbeddings,
     CommonGateway,
     CryptoService,

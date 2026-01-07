@@ -13,7 +13,7 @@ export class UserAgentVectorIngestionService {
   ) {}
 
   async ingestAgent(job: Job) {
-    const { userAgentId, userId, filePath, dataTrain, productIds } = job.data;
+    const { userAgentId, userId, filePath, productIds } = job.data;
     try {
       const products = await this.prismaService.product.findMany({
         where: { id: { in: productIds } },
@@ -37,13 +37,6 @@ export class UserAgentVectorIngestionService {
 
       if (products.length !== productIds.length) {
         throw new HttpException('Some products not found', 400);
-      }
-      if (dataTrain) {
-        await this.vectorStore.storeVectorDataTrain(
-          dataTrain,
-          userAgentId,
-          userId,
-        );
       }
 
       await this.vectorStore.storeVectorProduct(products, userAgentId, userId);
@@ -66,7 +59,7 @@ export class UserAgentVectorIngestionService {
   }
 
   async DegestAgent(job: Job) {
-    const { userAgentId, userId, filePath, dataTrain, productIds } = job.data;
+    const { userAgentId, userId, filePath, productIds } = job.data;
     try {
       await this.vectorStore.deleteByFilter('AgentUserDocument', {
         must: [
@@ -76,13 +69,6 @@ export class UserAgentVectorIngestionService {
       });
 
       await this.vectorStore.deleteByFilter('AgentUserProduct', {
-        must: [
-          { key: 'userId', match: { value: userId } },
-          { key: 'documentId', match: { value: userAgentId } },
-        ],
-      });
-
-      await this.vectorStore.deleteByFilter('AgentUserDataTrain', {
         must: [
           { key: 'userId', match: { value: userId } },
           { key: 'documentId', match: { value: userAgentId } },
@@ -112,14 +98,6 @@ export class UserAgentVectorIngestionService {
       if (products.length !== productIds.length) {
         throw new HttpException('Some products not found', 400);
       }
-      if (dataTrain) {
-        await this.vectorStore.storeVectorDataTrain(
-          dataTrain,
-          userAgentId,
-          userId,
-        );
-      }
-
       await this.vectorStore.storeVectorProduct(products, userAgentId, userId);
 
       await this.vectorStore.storeVectorFile(filePath, userAgentId, userId);

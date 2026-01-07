@@ -1,19 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { ChatGroq } from '@langchain/groq';
-import { ConversationWrapper } from 'src/model/aiWrapper.model';
 
 @Injectable()
 export class GroqService {
-  constructor() {}
-
-  async createCompletions(req: ConversationWrapper) {
-    const GROQ_API_KEY = '';
+  async createCompletions(GROQ_API_KEY: string, model: string) {
     const Groq = new ChatGroq({
-      model: 'llama-3.3-70b-versatile',
+      model: model,
       apiKey: GROQ_API_KEY,
       temperature: 0,
       maxRetries: 0,
-      timeout: 2,
+      timeout: 30000,
     });
 
     return Groq;

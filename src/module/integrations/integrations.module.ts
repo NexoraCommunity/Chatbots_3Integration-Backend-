@@ -27,11 +27,10 @@ import { IntegrationApisController } from './integrationApis.controller';
     FacebookApiService,
     WabaService,
     BotFatherService,
-    integrationGateway,
     BaileysService,
     Integrationservice,
     WhatsappAuthService,
   ],
-  exports: [FacebookApiService, BaileysService],
+  exports: [FacebookApiService, BaileysService, Integrationservice],
 })
 export class IntegrationsModule {}

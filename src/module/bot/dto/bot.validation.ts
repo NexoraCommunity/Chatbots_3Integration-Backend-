@@ -11,7 +11,7 @@ export class BotValidation {
     agentId: z.string().min(1).max(225),
     userId: z.string().min(1).max(225),
     botName: z.string().min(1).max(50),
-    data: z.string().min(0).max(100).optional(),
+    data: z.string().min(0).max(700).optional(),
     numberPhoneWaba: z.string().min(0).max(100).optional(),
     type: z.string().min(1).max(50),
   });
@@ -20,7 +20,7 @@ export class BotValidation {
     agentId: z.string().min(1).max(225),
     userId: z.string().min(1).max(225),
     type: z.string().min(1).max(50),
-    data: z.string().min(0).max(100).optional(),
+    data: z.string().min(0).max(700).optional(),
     numberPhoneWaba: z.string().min(0).max(100).optional(),
     botName: z.string().min(1).max(50),
   });

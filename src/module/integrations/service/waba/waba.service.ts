@@ -6,6 +6,7 @@ import { PrismaService } from 'src/module/prisma/service/prisma.service';
 import { AiService } from 'src/module/aiWrapper/service/aiWrapper.service';
 import { ConversationWrapper } from 'src/model/aiWrapper.model';
 import { IntegrationsValidation } from '../../dto/Integration.validation';
+import { UserAgent } from '@prisma/client';
 
 @Injectable()
 export class WabaService {
@@ -24,6 +25,8 @@ export class WabaService {
 
     if (!HookValid) throw new HttpException('Validation Error', 400);
 
+    // Next Chache
+
     const findWabaAccount =
       await this.prismaService.whatsaapBussinessAccount.findFirst({
         where: {
@@ -33,30 +36,36 @@ export class WabaService {
 
     if (!findWabaAccount) throw new HttpException('Unauthorized', 400);
 
-    const findWaba = await this.prismaService.bot.findFirst({
+    const bot = await this.prismaService.bot.findFirst({
       where: {
         numberPhoneWaba: HookValid.numberPhoneId,
         type: 'whatsapp Bussiness',
         isActive: true,
       },
+      include: {
+        agent: true,
+      },
     });
 
-    if (!findWaba) return;
+    // END Next Chache
+
+    if (!bot) return;
+
     const data: ConversationWrapper = {
       room: `${HookValid.numberPhoneId}${HookValid.from}`,
-      botId: String(findWaba?.id),
+      botId: String(bot?.id),
       integrationType: 'waba',
       message: HookValid.text,
     };
 
-    const aiResponse = await this.aiService.wrapper(data);
+    const aiResponse = await this.aiService.wrapper(data, bot?.agent);
 
     const message: PostMessage = {
       type: 'text',
       message: String(aiResponse),
-      numberPhoneId: String(findWaba.numberPhoneWaba),
+      numberPhoneId: String(bot.numberPhoneWaba),
       to: HookValid.from,
-      accessToken: String(findWaba.data),
+      accessToken: String(bot.data),
     };
     this.facebookApiService.PostMessage(message);
   }

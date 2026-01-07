@@ -11,6 +11,10 @@ import {
 } from 'src/model/bot.model';
 import { BotValidation } from '../dto/bot.validation';
 import { Bot } from '@prisma/client';
+interface IntegrationConfig {
+  accessToken?: string;
+  numberPhoneId?: string;
+}
 
 @Injectable()
 export class BotService {
@@ -152,9 +156,9 @@ export class BotService {
       },
     });
 
-    if (userIntegration?.provider === 'baileys') return true;
     if (!userIntegration)
       throw new HttpException(`Please activate integration ${type} first`, 400);
+    if (userIntegration?.provider === 'baileys') return true;
 
     const contentIntegration =
       await this.prismaService.contentIntegration.findFirst({
@@ -167,15 +171,23 @@ export class BotService {
 
     const validationValue = String(data ?? numberPhoneWaba ?? '');
 
-    const isValid = contentIntegration.configJson
-      .toString()
-      .includes(validationValue);
+    const config: IntegrationConfig =
+      typeof contentIntegration.configJson === 'string'
+        ? JSON.parse(contentIntegration.configJson)
+        : Buffer.isBuffer(contentIntegration.configJson)
+          ? JSON.parse(contentIntegration.configJson.toString('utf-8'))
+          : (contentIntegration.configJson as IntegrationConfig);
 
-    if (!isValid)
+    const isValid =
+      validationValue === config.accessToken ||
+      validationValue === config.numberPhoneId;
+
+    if (!isValid) {
       throw new HttpException(
         `${validationValue} not match in your data integration`,
         400,
       );
+    }
 
     return true;
   }

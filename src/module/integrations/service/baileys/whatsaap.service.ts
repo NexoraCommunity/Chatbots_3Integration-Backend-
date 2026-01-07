@@ -12,6 +12,8 @@ import { PrismaService } from 'src/module/prisma/service/prisma.service';
 import { AiService } from 'src/module/aiWrapper/service/aiWrapper.service';
 import { ConversationWrapper } from 'src/model/aiWrapper.model';
 import { BotService } from 'src/module/bot/service/bot.service';
+import { UserAgent } from '@prisma/client';
+import { CryptoService } from 'src/module/common/other/crypto.service';
 
 type MessagesUpsert = BaileysEventMap['messages.upsert'];
 
@@ -22,6 +24,7 @@ export class BaileysService implements OnModuleInit {
     private prismaService: PrismaService,
     private aiService: AiService,
     private botService: BotService,
+    private cryptoService: CryptoService,
   ) {}
 
   private bots = new Map<string, any>();
@@ -37,13 +40,25 @@ export class BaileysService implements OnModuleInit {
       },
     });
 
-    botActives.map((e) => {
-      this.startBot(e.id);
+    botActives.map(async (e) => {
+      const findAgent = await this.prismaService.userAgent.findUnique({
+        where: { id: e.agentId },
+      });
+      if (findAgent) {
+        this.startBot(e.id, {
+          ...findAgent,
+          apiKey: await this.cryptoService.decrypt(findAgent.apiKey),
+        });
+      }
     });
   }
 
   // Function to start and create new connection baileys
-  async startBot(botId: string, sendUpdate?: (data: any) => void) {
+  async startBot(
+    botId: string,
+    agent: UserAgent,
+    sendUpdate?: (data: any) => void,
+  ) {
     if (sendUpdate) {
       this.botCallbacks.set(botId, sendUpdate);
     }
@@ -105,7 +120,7 @@ export class BaileysService implements OnModuleInit {
             }
 
             setTimeout(() => {
-              this.startBot(botId);
+              this.startBot(botId, agent);
             }, 5000);
           } else {
             this.forceStop.delete(botId);
@@ -154,11 +169,13 @@ export class BaileysService implements OnModuleInit {
                 integrationType: 'baileys',
                 message: text,
               };
-              const aiResponse = await this.aiService.wrapper(data);
+              const aiResponse = await this.aiService.wrapper(data, agent);
 
-              await sock.sendMessage(String(sender), {
-                text: String(aiResponse),
-              });
+              if (aiResponse) {
+                await sock.sendMessage(String(sender), {
+                  text: String(aiResponse),
+                });
+              }
             }
           }
         } catch (err: any) {

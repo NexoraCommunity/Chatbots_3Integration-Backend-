@@ -1,8 +1,10 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
+import { UserAgent } from '@prisma/client';
 import TelegramBot from 'node-telegram-bot-api';
 import { ConversationWrapper } from 'src/model/aiWrapper.model';
 import { AiService } from 'src/module/aiWrapper/service/aiWrapper.service';
 import { BotService } from 'src/module/bot/service/bot.service';
+import { CryptoService } from 'src/module/common/other/crypto.service';
 import { PrismaService } from 'src/module/prisma/service/prisma.service';
 
 @Injectable()
@@ -11,6 +13,7 @@ export class BotFatherService implements OnModuleInit {
     private aiService: AiService,
     private prismaService: PrismaService,
     private botService: BotService,
+    private cryptoService: CryptoService,
   ) {}
   private bots = new Map<string, TelegramBot>();
   private botCallbacks = new Map<string, (data: any) => void>();
@@ -23,8 +26,16 @@ export class BotFatherService implements OnModuleInit {
       },
     });
 
-    botActives.map((e) => {
-      this.startBot(String(e.data), e.id);
+    botActives.map(async (e) => {
+      const findAgent = await this.prismaService.userAgent.findUnique({
+        where: { id: e.agentId },
+      });
+      if (findAgent) {
+        this.startBot(String(e.data), e.id, {
+          ...findAgent,
+          apiKey: await this.cryptoService.decrypt(findAgent.apiKey),
+        });
+      }
     });
   }
 
@@ -32,6 +43,7 @@ export class BotFatherService implements OnModuleInit {
   async startBot(
     token: string,
     botId: string,
+    agent: UserAgent,
     sendUpdate?: (data: any) => void,
   ) {
     if (sendUpdate) {
@@ -76,7 +88,7 @@ export class BotFatherService implements OnModuleInit {
             integrationType: 'botFather',
             message: msg.text,
           };
-          const aiResponse = await this.aiService.wrapper(data);
+          const aiResponse = await this.aiService.wrapper(data, agent);
           bot.sendMessage(msg.chat.id, String(aiResponse));
         }
       };

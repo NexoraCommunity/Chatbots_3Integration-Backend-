@@ -21,8 +21,8 @@ export class changeBot {
 export class startBot {
   botId: string;
   type: string;
-  data?: string;
   agentId: string;
+  data?: string;
   numberPhoneWaba?: string;
 }
 

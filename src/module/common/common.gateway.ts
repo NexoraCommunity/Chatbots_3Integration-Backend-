@@ -68,4 +68,8 @@ export class CommonGateway implements OnGatewayConnection, OnGatewayDisconnect {
   emitAgentStatus(userId: string, payload: any) {
     this.server.to(`user:${userId}`).emit('agent-status', payload);
   }
+
+  emitToUser(userId: string, event: string, payload: any) {
+    this.server.to(`user:${userId}`).emit(event, payload);
+  }
 }
