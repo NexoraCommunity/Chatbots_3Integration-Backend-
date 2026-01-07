@@ -8,6 +8,8 @@ import {
   Patch,
   Post,
   Query,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
 import {
   ChangeProduct,
@@ -18,6 +20,9 @@ import {
 import { WebResponse } from 'src/model/web.model';
 import { ProductService } from './service/product.service';
 import { Product } from '@prisma/client';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { imageMulterConfig } from '../../interceptors/multer.interceptors';
+import path from 'path';
 
 @Controller('api')
 export class ProductController {
@@ -75,7 +80,10 @@ export class ProductController {
     @Body() body: ChangeProduct,
     @Param('id') id: string,
   ): Promise<WebResponse<ProductApi>> {
-    const data = await this.productService.editProduct({ ...body, id: id });
+    const data = await this.productService.editProduct({
+      ...body,
+      id: id,
+    });
     return {
       data: data,
       message: 'Product updated succesfully!!',

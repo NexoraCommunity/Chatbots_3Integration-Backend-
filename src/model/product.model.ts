@@ -1,4 +1,4 @@
-import { Product } from '@prisma/client';
+import { Prisma, Product } from '@prisma/client';
 import { Pagination } from './web.model';
 
 export class ProductApi {
@@ -45,3 +45,22 @@ export class PaginationResponseProduct {
   Product: Product[];
   Pagination: Pagination;
 }
+
+export type ProductWithVariants = Prisma.ProductGetPayload<{
+  include: {
+    variantOptions: {
+      include: {
+        values: true;
+      };
+    };
+    productVariants: {
+      include: {
+        values: {
+          include: {
+            value: true;
+          };
+        };
+      };
+    };
+  };
+}>;

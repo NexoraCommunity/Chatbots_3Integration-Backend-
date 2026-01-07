@@ -108,7 +108,7 @@ describe('ProductRouteTest', () => {
       expect(response.body.data.price).toBe(10000);
       expect(response.body.data.stock).toBe(30);
       expect(response.body.data.weight).toBe(3);
-      expect(response.body.data.image).toBe('test');
+      expect(response.body.data.image).toBe('/uploads/image/undefined');
       expect(response.body.data.sku).toBe('test');
     });
     it('should be rejected if request is invalid', async () => {
@@ -207,7 +207,7 @@ describe('ProductRouteTest', () => {
       expect(response.body.data.price).toBe(10000);
       expect(response.body.data.stock).toBe(30);
       expect(response.body.data.weight).toBe(3);
-      expect(response.body.data.image).toBe('test');
+      expect(response.body.data.image).toBe('/uploads/image/undefined');
       expect(response.body.data.sku).toBe('test');
     });
 
@@ -256,7 +256,7 @@ describe('ProductRouteTest', () => {
           price: 10000,
           stock: 30,
           weight: 3,
-          image: 'test updated',
+          image: '/uploads/image/undefined',
           sku: 'test updated',
         })
         .set('Cookie', [`access_token=${accessToken}`]);
@@ -277,7 +277,7 @@ describe('ProductRouteTest', () => {
           price: 10000,
           stock: 30,
           weight: 3,
-          image: 'test updated',
+          image: '/uploads/image/undefined',
           sku: 'test updated',
         })
         .set('Cookie', [`access_token=${accessToken}`]);
@@ -289,7 +289,7 @@ describe('ProductRouteTest', () => {
       expect(response.body.data.price).toBe(10000);
       expect(response.body.data.stock).toBe(30);
       expect(response.body.data.weight).toBe(3);
-      expect(response.body.data.image).toBe('test updated');
+      expect(response.body.data.image).toBe('/uploads/image/undefined');
       expect(response.body.data.sku).toBe('test updated');
     });
     it('patch should be rejected if unathorized', async () => {

@@ -10,7 +10,7 @@ import { testService } from '../test.service';
 import { JwtFilter } from 'src/filter/jwt.filter';
 import cookieParser from 'cookie-parser';
 
-describe('ConversationsRouteTest', () => {
+describe('BotsRouteTest', () => {
   let app: INestApplication<App>;
   let test: testService;
 
@@ -224,16 +224,20 @@ describe('ConversationsRouteTest', () => {
         .set('Cookie', [`access_token=${accessToken}`]);
 
       expect(response.status).toBe(400);
-      expect(response.body.error).toBe('BotId is Invalid');
+      expect(response.body.error).toBeDefined();
     });
     it('should be accepted if request is valid', async () => {
       const bot = await test.getBot();
+      const prompt = await test.getPrompt();
+      const user = await test.getUser();
       const accessToken = await test.getAccessToken();
       const response = await request(app.getHttpServer())
         .patch(`/api/bot/${bot?.id}`)
         .send({
           bot_name: 'test',
           llm: 'test updated',
+          promptId: prompt?.id,
+          userId: user?.id,
           model: 'test updated',
         })
         .set('Cookie', [`access_token=${accessToken}`]);

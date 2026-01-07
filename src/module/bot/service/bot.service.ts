@@ -1,6 +1,6 @@
 import { HttpException, Injectable } from '@nestjs/common';
-import { PrismaService } from 'src/module/common/prisma.service';
-import { ValidationService } from 'src/module/common/validation.service';
+import { PrismaService } from 'src/module/prisma/service/prisma.service';
+import { ValidationService } from 'src/module/common/other/validation.service';
 import {
   BotApi,
   botStatus,
@@ -8,10 +8,13 @@ import {
   GetModelbot,
   PaginationResponseBot,
   postBot,
-  startBot,
 } from 'src/model/bot.model';
 import { BotValidation } from '../dto/bot.validation';
 import { Bot } from '@prisma/client';
+interface IntegrationConfig {
+  accessToken?: string;
+  numberPhoneId?: string;
+}
 
 @Injectable()
 export class BotService {
@@ -103,6 +106,10 @@ export class BotService {
 
     if (!BotValid) throw new HttpException('Validation Error', 400);
 
+    const TypeValidation = await this.validationType(BotValid);
+
+    if (!TypeValidation) throw new HttpException('Validation Error', 400);
+
     const data = await this.prismaService.bot.create({
       data: BotValid,
     });
@@ -120,6 +127,11 @@ export class BotService {
       );
 
       if (!BotValid) throw new HttpException('Validation Error', 400);
+
+      const TypeValidation = await this.validationType(BotValid);
+
+      if (!TypeValidation) throw new HttpException('Validation Error', 400);
+
       const data = await this.prismaService.bot.update({
         where: {
           id: req.id,
@@ -135,6 +147,50 @@ export class BotService {
     }
   }
 
+  async validationType(req: postBot) {
+    const { userId, type, data, numberPhoneWaba } = req;
+    const userIntegration = await this.prismaService.userIntegration.findFirst({
+      where: {
+        userId: userId,
+        provider: type,
+      },
+    });
+
+    if (!userIntegration)
+      throw new HttpException(`Please activate integration ${type} first`, 400);
+    if (userIntegration?.provider === 'baileys') return true;
+
+    const contentIntegration =
+      await this.prismaService.contentIntegration.findFirst({
+        where: {
+          userIntegrationId: userIntegration.id,
+        },
+      });
+
+    if (!contentIntegration?.configJson) return false;
+
+    const validationValue = String(data ?? numberPhoneWaba ?? '');
+
+    const config: IntegrationConfig =
+      typeof contentIntegration.configJson === 'string'
+        ? JSON.parse(contentIntegration.configJson)
+        : Buffer.isBuffer(contentIntegration.configJson)
+          ? JSON.parse(contentIntegration.configJson.toString('utf-8'))
+          : (contentIntegration.configJson as IntegrationConfig);
+
+    const isValid =
+      validationValue === config.accessToken ||
+      validationValue === config.numberPhoneId;
+
+    if (!isValid) {
+      throw new HttpException(
+        `${validationValue} not match in your data integration`,
+        400,
+      );
+    }
+
+    return true;
+  }
   async deleteBot(id: string) {
     if (!id) throw new HttpException('Validation Error', 400);
 
@@ -156,7 +212,7 @@ export class BotService {
         id: req.botId,
       },
       data: {
-        is_active: status,
+        isActive: status,
         data: req.data,
         numberPhoneWaba: req.numberPhoneWaba,
       },

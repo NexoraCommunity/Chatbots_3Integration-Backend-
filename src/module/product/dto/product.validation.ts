@@ -8,20 +8,20 @@ export class ProductValidation {
     description: z.string().min(1).max(1000),
     price: z.number(),
     stock: z.number(),
-    weight: z.number(),
+    weight: z.number().optional(),
     image: z.string().min(1).max(500),
     sku: z.string().min(1).max(50),
   });
   static readonly changeProduct: ZodType = z.object({
     id: z.string().min(1).max(225),
-    categoryId: z.string().min(1).max(225).optional(),
-    name: z.string().min(1).max(500).optional(),
-    description: z.string().min(1).max(1000).optional(),
-    price: z.number().optional(),
-    stock: z.number().optional(),
+    categoryId: z.string().min(1).max(225),
+    name: z.string().min(1).max(500),
+    description: z.string().min(1).max(1000),
+    price: z.number(),
+    stock: z.number(),
     weight: z.number().optional(),
-    image: z.string().min(1).max(500).optional(),
-    sku: z.string().min(1).max(50).optional(),
+    image: z.string().min(1).max(500),
+    sku: z.string().min(1).max(50),
   });
   static readonly Pagination: ZodType = z.object({
     page: z.string().min(1).max(50),

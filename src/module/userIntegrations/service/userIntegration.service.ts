@@ -1,7 +1,7 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { UserIntegration } from '@prisma/client';
-import { PrismaService } from 'src/module/common/prisma.service';
-import { ValidationService } from 'src/module/common/validation.service';
+import { PrismaService } from 'src/module/prisma/service/prisma.service';
+import { ValidationService } from 'src/module/common/other/validation.service';
 import {
   ChangeUserIntegration,
   PostUserIntegration,
@@ -17,11 +17,21 @@ export class UserIntegrationService {
   ) {}
 
   async getUserIntegrationByUserId(query): Promise<UserIntegration[]> {
-    if (!query.userId) throw new HttpException('Validation Error', 400);
+    const { userId, provider } = query;
+    if (!userId) throw new HttpException('Validation Error', 400);
+
+    const where: any = {
+      userId,
+    };
+
+    if (provider) {
+      where.provider = provider;
+    }
 
     const data = await this.prismaService.userIntegration.findMany({
-      where: {
-        userId: query.userId,
+      where: where,
+      include: {
+        contentIntegrations: true,
       },
     });
     return data;

@@ -3,11 +3,12 @@ import { BotFatherService } from './botFather/botFather.service';
 import { BaileysService } from './baileys/whatsaap.service';
 import { startBot } from 'src/model/bot.model';
 import { IntegrationsValidation } from '../dto/Integration.validation';
-import { ValidationService } from 'src/module/common/validation.service';
-import { PrismaService } from 'src/module/common/prisma.service';
+import { ValidationService } from 'src/module/common/other/validation.service';
+import { PrismaService } from 'src/module/prisma/service/prisma.service';
 import { BotService } from 'src/module/bot/service/bot.service';
-import { Integration } from '@prisma/client';
+import { Integration, UserAgent } from '@prisma/client';
 import { ChangeIntegration, IntegrationApi } from 'src/model/integration.model';
+import { CryptoService } from 'src/module/common/other/crypto.service';
 
 @Injectable()
 export class Integrationservice {
@@ -17,6 +18,7 @@ export class Integrationservice {
     private baileysService: BaileysService,
     private validationService: ValidationService,
     private botService: BotService,
+    private cryptoService: CryptoService,
   ) {}
 
   // Bot Integrations
@@ -25,7 +27,7 @@ export class Integrationservice {
       IntegrationsValidation.StartBot,
       req,
     );
-    const { data, type, numberPhoneWaba, botId } = Reqvalid;
+    const { data, type, botId, agentId } = Reqvalid;
     if (!Reqvalid) {
       sendUpdate({ message: 'Validation Error' });
     }
@@ -40,17 +42,43 @@ export class Integrationservice {
       sendUpdate({ message: 'Cannot Find BotID' });
       return;
     }
-    if (type === 'whatsapp' && numberPhoneWaba === undefined) {
-      this.baileysService.startBot(botId, sendUpdate);
-    } else if (type === 'telegram') {
-      this.botFatherService.startBot(String(data), botId, sendUpdate);
+
+    const findAgent = await this.findAgent(agentId);
+    if (!findAgent) {
+      sendUpdate({ message: 'Cannot Find AgentID' });
+      return;
+    }
+
+    if (type === 'baileys') {
+      this.baileysService.startBot(botId, findAgent, sendUpdate);
+    } else if (type === 'botFather') {
+      this.botFatherService.startBot(
+        String(data),
+        botId,
+        findAgent,
+        sendUpdate,
+      );
     } else {
       sendUpdate({
         message: 'Bot Connected To Waba',
-        data: { type: 'whatsapp', botId: req.botId },
+        data: { type: 'whatsapp Bussiness', botId: req.botId },
       });
       await this.botService.updateBotStatus(req, true);
     }
+  }
+
+  async findAgent(agentId: string) {
+    const findAgent = await this.prismaService.userAgent.findUnique({
+      where: {
+        id: agentId,
+      },
+    });
+
+    if (!findAgent) return false;
+
+    const apiKey = this.cryptoService.decrypt(findAgent.apiKey);
+
+    return { ...findAgent, apiKey: apiKey };
   }
 
   async disableBot(req: startBot, sendUpdate: (data: any) => void) {
@@ -58,7 +86,7 @@ export class Integrationservice {
       IntegrationsValidation.StartBot,
       req,
     );
-    const { data, type, numberPhoneWaba, botId } = Reqvalid;
+    const { type, botId } = Reqvalid;
     if (!Reqvalid) {
       sendUpdate({ message: 'Validation Error' });
     }
@@ -73,14 +101,14 @@ export class Integrationservice {
       return;
     }
 
-    if (type === 'whatsapp' && numberPhoneWaba === undefined) {
+    if (type === 'baileys') {
       this.baileysService.disableBot(botId, sendUpdate);
-    } else if (type === 'telegram') {
+    } else if (type === 'botFather') {
       this.botFatherService.disableBot(botId, sendUpdate);
     } else {
       sendUpdate({
         message: 'Bot Disconnected To Waba',
-        data: { type: 'whatsapp', botId: req.botId },
+        data: { type: 'whatsapp Bussiness', botId: req.botId },
       });
       await this.botService.updateBotStatus(req, false);
     }

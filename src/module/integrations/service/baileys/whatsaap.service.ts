@@ -8,10 +8,12 @@ import {
 import * as qrcode from 'qrcode';
 import * as qrcodeT from 'qrcode-terminal';
 import { WhatsappAuthService } from './session.service';
-import { PrismaService } from 'src/module/common/prisma.service';
+import { PrismaService } from 'src/module/prisma/service/prisma.service';
 import { AiService } from 'src/module/aiWrapper/service/aiWrapper.service';
 import { ConversationWrapper } from 'src/model/aiWrapper.model';
 import { BotService } from 'src/module/bot/service/bot.service';
+import { UserAgent } from '@prisma/client';
+import { CryptoService } from 'src/module/common/other/crypto.service';
 
 type MessagesUpsert = BaileysEventMap['messages.upsert'];
 
@@ -22,6 +24,7 @@ export class BaileysService implements OnModuleInit {
     private prismaService: PrismaService,
     private aiService: AiService,
     private botService: BotService,
+    private cryptoService: CryptoService,
   ) {}
 
   private bots = new Map<string, any>();
@@ -31,19 +34,31 @@ export class BaileysService implements OnModuleInit {
   async onModuleInit() {
     const botActives = await this.prismaService.bot.findMany({
       where: {
-        is_active: true,
-        type: 'whatsapp',
+        isActive: true,
+        type: 'baileys',
         numberPhoneWaba: null,
       },
     });
 
-    botActives.map((e) => {
-      this.startBot(e.id);
+    botActives.map(async (e) => {
+      const findAgent = await this.prismaService.userAgent.findUnique({
+        where: { id: e.agentId },
+      });
+      if (findAgent) {
+        this.startBot(e.id, {
+          ...findAgent,
+          apiKey: await this.cryptoService.decrypt(findAgent.apiKey),
+        });
+      }
     });
   }
 
   // Function to start and create new connection baileys
-  async startBot(botId: string, sendUpdate?: (data: any) => void) {
+  async startBot(
+    botId: string,
+    agent: UserAgent,
+    sendUpdate?: (data: any) => void,
+  ) {
     if (sendUpdate) {
       this.botCallbacks.set(botId, sendUpdate);
     }
@@ -52,7 +67,7 @@ export class BaileysService implements OnModuleInit {
       if (this.bots.has(botId)) {
         cb?.({
           message: 'Bot Connected To Whatsapp',
-          type: 'whatsapp',
+          type: 'baileys',
           botId: botId,
         });
         return;
@@ -76,7 +91,7 @@ export class BaileysService implements OnModuleInit {
           cb?.({
             message: 'QrCode Generated',
             qrCode: QrCode,
-            type: 'whatsapp',
+            type: 'baileys',
             botId: botId,
           });
         }
@@ -84,7 +99,7 @@ export class BaileysService implements OnModuleInit {
           this.bots.set(botId, sock);
           cb?.({
             message: 'Bot Connected To Whatsapp',
-            type: 'whatsapp',
+            type: 'baileys',
             botId: botId,
           });
           await this.botService.updateBotStatus(
@@ -105,14 +120,14 @@ export class BaileysService implements OnModuleInit {
             }
 
             setTimeout(() => {
-              this.startBot(botId);
+              this.startBot(botId, agent);
             }, 5000);
           } else {
             this.forceStop.delete(botId);
 
             cb?.({
               message: `[${botId}] Logout total, perlu scan ulang. refresh halaman untuk generate qrCode`,
-              type: 'whatsapp',
+              type: 'baileys',
               botId: botId,
             });
             await this.logOut(botId);
@@ -127,7 +142,7 @@ export class BaileysService implements OnModuleInit {
         sendUpdate?.({
           message: 'QR berhasil discan. Connecting...',
           botId: botId,
-          type: 'whatsapp',
+          type: 'baileys',
         });
       };
 
@@ -154,11 +169,13 @@ export class BaileysService implements OnModuleInit {
                 integrationType: 'baileys',
                 message: text,
               };
-              const aiResponse = await this.aiService.wrapper(data);
+              const aiResponse = await this.aiService.wrapper(data, agent);
 
-              await sock.sendMessage(String(sender), {
-                text: String(aiResponse),
-              });
+              if (aiResponse) {
+                await sock.sendMessage(String(sender), {
+                  text: String(aiResponse),
+                });
+              }
             }
           }
         } catch (err: any) {
@@ -181,7 +198,7 @@ export class BaileysService implements OnModuleInit {
       cb?.({
         message: `Cannot StartBot Because: ${err}`,
         botId: botId,
-        type: 'whatsapp',
+        type: 'baileys',
       });
     }
   }
@@ -197,7 +214,7 @@ export class BaileysService implements OnModuleInit {
       sendUpdate?.({
         message: 'Bot Disconnected to Whatsapp',
         botId: botId,
-        type: 'whatsapp',
+        type: 'baileys',
       });
       this.bots.delete(botId);
 

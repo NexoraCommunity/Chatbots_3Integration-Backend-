@@ -10,7 +10,7 @@ import {
   Query,
 } from '@nestjs/common';
 import { WebResponse } from 'src/model/web.model';
-import { BotApi, GetModelbot, postBot } from 'src/model/bot.model';
+import { BotApi, changeBot, GetModelbot, postBot } from 'src/model/bot.model';
 import { Bot } from '@prisma/client';
 import { BotService } from './service/bot.service';
 @Controller('api')
@@ -61,7 +61,7 @@ export class BotController {
   @Patch('bot/:id')
   @HttpCode(200)
   async editbot(
-    @Body() body: BotApi,
+    @Body() body: changeBot,
     @Param('id') id: string,
   ): Promise<WebResponse<BotApi>> {
     const data = await this.botService.editBot({ ...body, id: id });

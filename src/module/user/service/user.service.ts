@@ -1,6 +1,6 @@
 import { HttpException, Injectable } from '@nestjs/common';
-import { PrismaService } from 'src/module/common/prisma.service';
-import { ValidationService } from 'src/module/common/validation.service';
+import { PrismaService } from 'src/module/prisma/service/prisma.service';
+import { ValidationService } from 'src/module/common/other/validation.service';
 import {
   GetCurrentUser,
   PostCurrentUser,

@@ -1,7 +1,7 @@
 import { HttpException, Injectable, NestMiddleware } from '@nestjs/common';
 import { NextFunction, Request, Response } from 'express';
 import { JwtService } from 'src/module/auth/service/jwt.service';
-import { PrismaService } from 'src/module/common/prisma.service';
+import { PrismaService } from 'src/module/prisma/service/prisma.service';
 
 @Injectable()
 export class AuthMiddleware implements NestMiddleware {

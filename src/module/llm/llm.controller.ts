@@ -7,6 +7,6 @@ export class LlmController {
 
   @Get('llm')
   async getAllModels() {
-    return this.llmService.getOpenRouterModels();
+    return this.llmService.getTextLLMModels();
   }
 }

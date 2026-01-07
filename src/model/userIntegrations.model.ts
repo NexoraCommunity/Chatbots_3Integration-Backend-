@@ -1,14 +1,16 @@
 export class UserIntegrationApi {
   connectedAt: Date;
-  isconneted: boolean;
+  isconnected: boolean;
+  provider: string;
 }
 
 export class PostUserIntegration {
   userId: string;
   integrationId: number;
-  isconneted: boolean;
+  provider: string;
+  isconnected: boolean;
 }
 export class ChangeUserIntegration {
   id: string;
-  isconneted: boolean;
+  isconnected: boolean;
 }

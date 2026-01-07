@@ -16,6 +16,7 @@ export default class CustomSequencer extends Sequencer {
       'message.spec',
       'integration.spec.ts',
       'userIntegration.spec.ts',
+      'contentIntegration.spec.ts',
       'category.spec.ts',
       'product.spec.ts',
       'variantOption.spec.ts',

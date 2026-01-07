@@ -7,6 +7,6 @@ import { LlmService } from './LlmService/llm.service';
 @Module({
   controllers: [LlmController],
   providers: [GroqService, OpenRouterService, GeminiService, LlmService],
-  exports: [GroqService, OpenRouterService, GeminiService],
+  exports: [GroqService, OpenRouterService, GeminiService, LlmService],
 })
 export class LlmModule {}

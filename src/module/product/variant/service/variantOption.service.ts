@@ -1,7 +1,7 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { VariantOption } from '@prisma/client';
-import { PrismaService } from 'src/module/common/prisma.service';
-import { ValidationService } from 'src/module/common/validation.service';
+import { PrismaService } from 'src/module/prisma/service/prisma.service';
+import { ValidationService } from 'src/module/common/other/validation.service';
 import { VariantOptionApi } from 'src/model/variant.model';
 import { VariantValidation } from '../dto/variant.validation';
 

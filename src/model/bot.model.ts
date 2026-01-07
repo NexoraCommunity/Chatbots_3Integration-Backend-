@@ -3,26 +3,27 @@ import { Bot } from '@prisma/client';
 
 export class BotApi {
   userId: string;
-  promptId: string;
-  bot_name: string;
-  llm: string;
-  model: string;
+  agentId: string;
+  data: string | null;
+  numberPhoneWaba: string | null;
+  botName: string;
 }
 
 export class changeBot {
   id: string;
-  promptId: string;
-  llm: string;
-  model: string;
-  bot_name: string;
+  agentId: string;
+  type: string;
+  userId: string;
+  data: string | null;
+  numberPhoneWaba: string | null;
+  botName: string;
 }
 export class startBot {
   botId: string;
   type: string;
+  agentId: string;
   data?: string;
   numberPhoneWaba?: string;
-  llm: string;
-  model: string;
 }
 
 export class botStatus {
@@ -40,11 +41,11 @@ export class ResponseBot {
 }
 export class postBot {
   userId: string;
-  promptId: string;
-  bot_name: string;
+  agentId: string;
+  botName: string;
   type: string;
-  llm: string;
-  model: string;
+  data: string | null;
+  numberPhoneWaba: string | null;
 }
 
 export class GetModelbot {

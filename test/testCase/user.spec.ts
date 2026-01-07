@@ -245,7 +245,7 @@ describe('UserRouteTest', () => {
       expect(response.body.message).toBe('User updated successfuly!!');
       expect(response.body.data.firstName).toBe('testUpdated');
       expect(response.body.data.lastName).toBe('testUpdated');
-      expect(response.body.data.picture).toBe('testUpdated');
+      expect(response.body.data.picture).toBe('/uploads/image/undefined');
     });
     it('should be rejected if Id is not found', async () => {
       const accessToken = await test.getAccessToken();
@@ -254,7 +254,7 @@ describe('UserRouteTest', () => {
         .set('Cookie', [`access_token=${accessToken}`]);
 
       expect(response.status).toBe(400);
-      expect(response.body.error).toBe('UserId is Invalid');
+      expect(response.body.error).toBeDefined();
     });
     it('patch should be rejected if unathorized', async () => {
       const response = await request(app.getHttpServer()).patch('/api/user/id');

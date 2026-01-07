@@ -3,8 +3,8 @@ import z, { ZodType } from 'zod';
 export class userValidation {
   static readonly RequestUser: ZodType = z.object({
     id: z.string().min(1).max(225),
-    firstName: z.string().min(1).max(50).optional(),
-    lastName: z.string().min(1).max(50).optional(),
+    firstName: z.string().min(1).max(50),
+    lastName: z.string().min(1).max(50),
     picture: z.string().min(1).max(225).optional(),
   });
   static readonly VerifPassword: ZodType = z.object({

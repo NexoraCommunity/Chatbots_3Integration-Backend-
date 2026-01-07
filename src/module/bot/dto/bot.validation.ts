@@ -4,25 +4,25 @@ export class BotValidation {
   static readonly WabaHook: ZodType = z.object({
     name: z.string().min(1).max(50),
     Bot: z.string().min(1).max(1000),
-    llm: z.string().min(1).max(50),
     type: z.string().min(1).max(50),
   });
 
   static readonly Bot: ZodType = z.object({
-    promptId: z.string().min(1).max(225),
+    agentId: z.string().min(1).max(225),
     userId: z.string().min(1).max(225),
-    bot_name: z.string().min(1).max(50),
-    llm: z.string().min(1).max(100),
-    model: z.string().min(1).max(100),
+    botName: z.string().min(1).max(50),
+    data: z.string().min(0).max(700).optional(),
+    numberPhoneWaba: z.string().min(0).max(100).optional(),
     type: z.string().min(1).max(50),
   });
   static readonly changeBot: ZodType = z.object({
     id: z.string().min(1).max(225),
-    promptId: z.string().min(1).max(225).optional(),
-    llm: z.string().min(1).max(100).optional(),
-    model: z.string().min(1).max(100).optional(),
-    userId: z.string().min(1).max(225).optional(),
-    bot_name: z.string().min(1).max(50).optional(),
+    agentId: z.string().min(1).max(225),
+    userId: z.string().min(1).max(225),
+    type: z.string().min(1).max(50),
+    data: z.string().min(0).max(700).optional(),
+    numberPhoneWaba: z.string().min(0).max(100).optional(),
+    botName: z.string().min(1).max(50),
   });
   static readonly Pagination: ZodType = z.object({
     page: z.string().min(1).max(50),

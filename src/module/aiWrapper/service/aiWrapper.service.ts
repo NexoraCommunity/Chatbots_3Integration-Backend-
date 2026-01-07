@@ -1,21 +1,22 @@
 import { Injectable } from '@nestjs/common';
 import { ConversationWrapper } from 'src/model/aiWrapper.model';
-import { ValidationService } from 'src/module/common/validation.service';
-import { GroqService } from 'src/module/llm/LlmService/groq.service';
+import { ValidationService } from 'src/module/common/other/validation.service';
 import { AiWrapperValidation } from '../dto/aiWrapper.validation';
 import { ConversationService } from 'src/module/conversation/service/conversation.service';
 import { MessageService } from 'src/module/message/service/message.service';
+import { UserAgent } from '@prisma/client';
+import { CustomerServiceWorkFlow } from '../Workflow/customerService.workflow';
 
 @Injectable()
 export class AiService {
   constructor(
     private validationService: ValidationService,
     private messageService: MessageService,
-    private groqService: GroqService,
     private conversationService: ConversationService,
+    private customerServiceWorkFlow: CustomerServiceWorkFlow,
   ) {}
 
-  async wrapper(req: ConversationWrapper) {
+  async wrapper(req: ConversationWrapper, agent: UserAgent) {
     const ReqValid: ConversationWrapper = this.validationService.validate(
       AiWrapperValidation.aiWrapper,
       req,
@@ -33,16 +34,21 @@ export class AiService {
       message: ReqValid.message,
     });
 
-    const aiResponse = await this.groqService.createCompletions(
-      ReqValid.message,
-    );
+    let aiResponse = '';
+
+    if (agent.agent === 'customer-service') {
+      aiResponse = await this.customerServiceWorkFlow.workflow(
+        agent,
+        req.message,
+      );
+    }
 
     if (!aiResponse || aiResponse === '') return;
     await this.messageService.addNewMessage({
       role: 'Bot',
       type: 'text',
       conversationId: conversation.id,
-      message: aiResponse,
+      message: String(aiResponse),
     });
 
     return aiResponse;

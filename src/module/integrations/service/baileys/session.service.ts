@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { initAuthCreds, BufferJSON, AuthenticationState } from 'baileys';
-import { PrismaService } from 'src/module/common/prisma.service';
+import { PrismaService } from 'src/module/prisma/service/prisma.service';
 
 @Injectable()
 export class WhatsappAuthService {

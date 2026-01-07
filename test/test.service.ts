@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from 'src/module/common/prisma.service';
+import { PrismaService } from 'src/module/prisma/service/prisma.service';
 import * as jwt from 'jsonwebtoken';
 import { ConfigService } from '@nestjs/config';
 
@@ -14,11 +14,17 @@ export class testService {
     });
 
     if (!user) return;
+    await this.prismaService.contentIntegration.deleteMany({
+      where: {
+        type: 'LLM',
+      },
+    });
     await this.prismaService.userIntegration.deleteMany({
       where: {
         isconneted: true,
       },
     });
+
     await this.prismaService.integration.deleteMany({
       where: {
         name: 'test',
@@ -192,6 +198,16 @@ export class testService {
       where: {
         isconneted: true,
       },
+    });
+    return data;
+  }
+  // ContentIntegration Test Service
+  async getContentIntegration() {
+    const data = await this.prismaService.contentIntegration.findFirst({
+      where: {
+        type: 'LLM',
+      },
+      orderBy: { createdAt: 'asc' },
     });
     return data;
   }
