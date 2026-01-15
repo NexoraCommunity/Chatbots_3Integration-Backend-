@@ -4,17 +4,20 @@ import { Conversation } from '@prisma/client';
 export class ConversationApi {
   botId: string;
   room: string;
+  humanHandle: boolean;
   integrationType: string;
 }
 
 export class PostConversation {
   botId: string;
   room: string;
+  humanHandle: boolean;
   integrationType: string;
 }
 export class ChangeConversation {
   id: string;
   room: string;
+  humanHandle: boolean;
   integrationType: string;
 }
 

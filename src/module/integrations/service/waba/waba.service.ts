@@ -55,6 +55,7 @@ export class WabaService {
       room: `${HookValid.numberPhoneId}${HookValid.from}`,
       botId: String(bot?.id),
       integrationType: 'waba',
+      humanHandle: false,
       message: HookValid.text,
     };
 

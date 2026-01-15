@@ -3,4 +3,5 @@ export class ConversationWrapper {
   integrationType: string;
   message: string;
   botId: string;
+  humanHandle: boolean;
 }

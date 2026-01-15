@@ -6,6 +6,7 @@ import { ConversationService } from 'src/module/conversation/service/conversatio
 import { MessageService } from 'src/module/message/service/message.service';
 import { UserAgent } from '@prisma/client';
 import { CustomerServiceWorkFlow } from '../Workflow/customerService.workflow';
+import { AiResponse } from 'src/model/Rag.model';
 
 @Injectable()
 export class AiService {
@@ -27,6 +28,10 @@ export class AiService {
     const conversation =
       await this.conversationService.addNewConversation(ReqValid);
 
+    if (conversation.humanHandle) {
+      return undefined;
+    }
+
     await this.messageService.addNewMessage({
       role: 'user',
       type: 'text',
@@ -34,16 +39,26 @@ export class AiService {
       message: ReqValid.message,
     });
 
-    let aiResponse = '';
+    let aiResponse: AiResponse = new AiResponse();
 
     if (agent.agent === 'customer-service') {
-      aiResponse = await this.customerServiceWorkFlow.workflow(
+      const response = await this.customerServiceWorkFlow.workflow(
         agent,
         req.message,
+        conversation.room,
       );
+
+      if (!response) return;
+
+      let res = response;
+
+      if (agent.llm === 'gemini') {
+        res = this.cleanJsonGemini(response);
+      }
+      aiResponse = JSON.parse(res);
     }
 
-    if (!aiResponse || aiResponse === '') return;
+    if (!aiResponse || aiResponse.messages.length === 0) return;
     await this.messageService.addNewMessage({
       role: 'Bot',
       type: 'text',
@@ -51,6 +66,15 @@ export class AiService {
       message: String(aiResponse),
     });
 
+    console.log(aiResponse);
+
     return aiResponse;
+  }
+
+  cleanJsonGemini(text: string): string {
+    return text
+      .replace(/```json/g, '')
+      .replace(/```/g, '')
+      .trim();
   }
 }

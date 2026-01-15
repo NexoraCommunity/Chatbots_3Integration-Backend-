@@ -190,26 +190,29 @@ export class UserAgentService {
         data: UserAgentValid,
       });
 
-      if (find.filePath !== data.filePath) {
-        await moveFile(replacePath, 'file');
-        console.log(find.filePath);
-        await moveFile(find.filePath, 'temp');
+      const isFileSame = find.filePath === data.filePath;
+      const isProductSame =
+        JSON.stringify(find.productIds) === JSON.stringify(data.productIds);
 
-        await vectorIngestQueue.add(
-          'DEGEST_AGENT',
-          {
-            userAgentId: data.id,
-            userId: UserAgentValid.userId,
-            filePath: data.filePath,
-            prompt: UserAgentValid.prompt,
-            productIds: data.productIds,
-          },
-          {
-            attempts: 3,
-            backoff: { type: 'exponential', delay: 5000 },
-          },
-        );
+      if (!isFileSame) {
+        await moveFile(replacePath, 'file');
+        await moveFile(find.filePath, 'temp');
       }
+      await vectorIngestQueue.add(
+        'DEGEST_AGENT',
+        {
+          userAgentId: data.id,
+          userId: UserAgentValid.userId,
+          filePath: data.filePath,
+          productIds: data.productIds,
+          isFileSame: isFileSame,
+          isProductSame: isProductSame,
+        },
+        {
+          attempts: 3,
+          backoff: { type: 'exponential', delay: 5000 },
+        },
+      );
 
       const res: UserAgentApi = {
         name: data.name,
@@ -247,6 +250,20 @@ export class UserAgentService {
 
       if (data) {
         await moveFile(String(data.filePath), 'temp');
+
+        await vectorIngestQueue.add(
+          'DEGEST_AGENT',
+          {
+            userAgentId: data.id,
+            userId: data.userId,
+            filePath: null,
+            productIds: [],
+          },
+          {
+            attempts: 3,
+            backoff: { type: 'exponential', delay: 5000 },
+          },
+        );
       }
 
       return true;

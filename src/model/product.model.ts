@@ -6,6 +6,7 @@ export class ProductApi {
   description: string;
   price: number;
   image: string;
+  isActive: boolean;
   stock: number;
   sku: string;
   weight: number | null;
@@ -16,6 +17,7 @@ export class PostProduct {
   description: string;
   price: number;
   image: string;
+  isActive: boolean;
   stock: number;
   sku: string;
   weight: number | null;
@@ -28,6 +30,7 @@ export class ChangeProduct {
   name: string;
   description: string;
   price: number;
+  isActive: boolean;
   image: string;
   stock: number;
   sku: string;

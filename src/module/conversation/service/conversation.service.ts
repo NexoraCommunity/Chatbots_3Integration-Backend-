@@ -149,6 +149,7 @@ export class ConversationService {
       const res: ConversationApi = {
         botId: data.botId,
         integrationType: data.integrationType,
+        humanHandle: data.humanHandle,
         room: data.room,
       };
       return res;

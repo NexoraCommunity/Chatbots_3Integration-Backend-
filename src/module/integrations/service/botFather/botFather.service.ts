@@ -86,10 +86,20 @@ export class BotFatherService implements OnModuleInit {
             room: `${botId}${msg.from?.id}`,
             botId: botId,
             integrationType: 'botFather',
+            humanHandle: false,
             message: msg.text,
           };
           const aiResponse = await this.aiService.wrapper(data, agent);
-          bot.sendMessage(msg.chat.id, String(aiResponse));
+
+          if (aiResponse?.messages.length !== undefined) {
+            aiResponse.messages.map(async (e) => {
+              if (!e.image) {
+                bot.sendMessage(msg.chat.id, e.text);
+              } else {
+                bot.sendPhoto(msg.chat.id, e.image, { caption: e.text });
+              }
+            });
+          }
         }
       };
 

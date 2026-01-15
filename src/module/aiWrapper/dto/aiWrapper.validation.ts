@@ -5,6 +5,7 @@ export class AiWrapperValidation {
     room: z.string().min(1).max(225),
     integrationType: z.string().min(1).max(100),
     message: z.string().min(1),
+    humanHandle: z.boolean(),
     botId: z.string().min(1).max(225),
   });
 }

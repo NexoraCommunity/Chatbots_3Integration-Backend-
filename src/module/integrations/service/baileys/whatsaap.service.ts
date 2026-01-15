@@ -14,6 +14,8 @@ import { ConversationWrapper } from 'src/model/aiWrapper.model';
 import { BotService } from 'src/module/bot/service/bot.service';
 import { UserAgent } from '@prisma/client';
 import { CryptoService } from 'src/module/common/other/crypto.service';
+import { AiResponse } from 'src/model/Rag.model';
+import path from 'path';
 
 type MessagesUpsert = BaileysEventMap['messages.upsert'];
 
@@ -167,13 +169,26 @@ export class BaileysService implements OnModuleInit {
                 room: `${botId}${sender}`,
                 botId: botId,
                 integrationType: 'baileys',
+                humanHandle: false,
                 message: text,
               };
-              const aiResponse = await this.aiService.wrapper(data, agent);
+              const aiResponse: AiResponse | undefined =
+                await this.aiService.wrapper(data, agent);
 
-              if (aiResponse) {
-                await sock.sendMessage(String(sender), {
-                  text: String(aiResponse),
+              if (aiResponse?.messages.length !== undefined) {
+                aiResponse.messages.map(async (e) => {
+                  if (!e.image) {
+                    await sock.sendMessage(String(sender), {
+                      text: e.text,
+                    });
+                  } else {
+                    await sock.sendMessage(String(sender), {
+                      image: {
+                        url: path.join(process.cwd(), e.image),
+                      },
+                      caption: e.text,
+                    });
+                  }
                 });
               }
             }

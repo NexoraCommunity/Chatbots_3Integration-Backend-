@@ -161,6 +161,7 @@ export class ProductService {
       };
       return res;
     } catch (error) {
+      console.log(error);
       if (String(error).includes('invalid_type')) throw error;
       throw new HttpException('ProductId is Invalid', 400);
     }

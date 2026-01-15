@@ -1,4 +1,13 @@
 - Make Content Integration Api **Done**
 - Make Save File Upload (Image) in dir Project **Done**
-- Try Qdrant Vectore Store Use Docker
-- Make WorkFlow Customer Service.
+- Try Qdrant Vectore Store Use Docker **Done**
+- Make WorkFlow Customer Service. **Done**
+- Cari Problem knp response belum natural dan kesalahan klasifikasi awal.
+- Buat Order Rest Api
+- Buat Invoice.
+- Buat Transaction dan implement payment gate way (setiap account)
+- Buat Check ongkir sederhana.
+- Pastikan Workflow Berjalan dengan lancar 
+
+
+

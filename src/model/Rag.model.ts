@@ -1,4 +1,32 @@
+import { ChatGoogleGenerativeAI } from '@langchain/google-genai';
+import { ChatGroq } from '@langchain/groq';
 import { Annotation } from '@langchain/langgraph';
+import { ChatOpenAI } from '@langchain/openai';
+import { Product } from '@prisma/client';
+
+export class ChatMessage {
+  role: 'assistant' | 'customer';
+  content: string;
+}
+
+export class AiResponse {
+  messages: Message[];
+}
+
+export class Message {
+  text: string;
+  image?: string;
+}
+
+export class ProductMessage {
+  name: string;
+  description?: string;
+  price?: string;
+  stock?: number;
+  image?: string | null;
+}
+
+export type LLMPlatform = ChatGroq | ChatGoogleGenerativeAI | ChatOpenAI;
 
 export const RAGStateAnnotation = Annotation.Root({
   question: Annotation<string>(),
@@ -7,6 +35,13 @@ export const RAGStateAnnotation = Annotation.Root({
     default: () => [],
   }),
   answer: Annotation<string>(),
+  products: Annotation<string>(),
+  order: Annotation<string>(),
+  intent: Annotation<'PRODUCT' | 'LEAD' | 'ORDER' | 'HUMAN_HANDLE' | null>(),
+  chatHistory: Annotation<ChatMessage[]>({
+    value: (prev, next) => [...prev, ...next],
+    default: () => [],
+  }),
 });
 
 export type RAGState = typeof RAGStateAnnotation.State;

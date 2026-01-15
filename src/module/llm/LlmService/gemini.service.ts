@@ -3,13 +3,24 @@ import { ChatGoogleGenerativeAI } from '@langchain/google-genai';
 
 @Injectable()
 export class GeminiService {
-  async createCompletions(GEMINI_API_KEY: string, model: string) {
-    const GEMINI = new ChatGoogleGenerativeAI({
-      model: model,
+  private clients = new Map<string, ChatGoogleGenerativeAI>();
+
+  getClient(apiKey: string, model: string) {
+    const normalizedModel = model.replace('models/', '');
+
+    const cacheKey = `${apiKey}:${normalizedModel}`;
+    if (this.clients.has(cacheKey)) {
+      return this.clients.get(cacheKey);
+    }
+
+    const client = new ChatGoogleGenerativeAI({
+      model: normalizedModel,
       temperature: 0,
-      maxRetries: 0,
-      apiKey: GEMINI_API_KEY,
+      apiKey,
+      maxRetries: 2,
     });
-    return GEMINI;
+
+    this.clients.set(cacheKey, client);
+    return client;
   }
 }
