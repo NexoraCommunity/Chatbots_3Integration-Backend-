@@ -1,9 +1,10 @@
+import { MessageResponse } from './Rag.model';
 import { Pagination } from './web.model';
 import { Message } from '@prisma/client';
 
 export class MessageApi {
   conversationId: string;
-  message: string;
+  message: MessageResponse;
   type: string;
   role: string;
 }
@@ -11,13 +12,13 @@ export class MessageApi {
 export class PostMessage {
   conversationId: string;
   type: string;
-  message: string;
+  message: MessageResponse;
   role: string;
 }
 export class ChangeMessage {
   id: string;
   type: string;
-  message: string;
+  message: MessageResponse;
   role: string;
 }
 

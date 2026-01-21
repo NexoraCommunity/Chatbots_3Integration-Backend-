@@ -2,7 +2,13 @@
 - Make Save File Upload (Image) in dir Project **Done**
 - Try Qdrant Vectore Store Use Docker **Done**
 - Make WorkFlow Customer Service. **Done**
-- Cari Problem knp response belum natural dan kesalahan klasifikasi awal.
+- Cari Problem knp response belum natural dan kesalahan klasifikasi awal. *Done*
+- Tambah Test Agent (Agent Gateway) *Done*
+- Tambah Bot Logs (Bot Gateway) *Done*
+- RateLimit Api *Done*
+- Tambah Dashboard *Done*
+- Tambah Cs Handle when order Trigger
+
 - Buat Order Rest Api
 - Buat Invoice.
 - Buat Transaction dan implement payment gate way (setiap account)

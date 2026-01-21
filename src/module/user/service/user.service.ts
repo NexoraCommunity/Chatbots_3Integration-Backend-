@@ -10,6 +10,7 @@ import {
 import { userValidation } from '../dto/user.validation';
 import { EmailService } from 'src/module/auth/service/email.service';
 import bcrypt from 'bcrypt';
+import { moveFile } from 'src/interceptors/multer.interceptors';
 
 @Injectable()
 export class UserService {
@@ -63,6 +64,11 @@ export class UserService {
         },
         data: requestValidation,
       });
+
+      if (data && data.picture) {
+        const replacePath = data.picture.replace('image', 'temp');
+        await moveFile(replacePath, 'image');
+      }
 
       return data;
     } catch (error) {

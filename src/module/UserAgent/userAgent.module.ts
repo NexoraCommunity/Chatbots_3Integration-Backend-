@@ -6,6 +6,7 @@ import { AiWrapperModule } from '../aiWrapper/aiWrapper.module';
 import { LlmModule } from '../llm/llm.module';
 import { UserAgentRateLimiter } from './userAgent.ratelimiter';
 import { UserAgentEventSubscriberService } from './service/userAgentEvent.service';
+import { userAgentGateway } from './userAgent.gateway';
 
 @Module({
   imports: [AiWrapperModule, LlmModule],
@@ -15,6 +16,7 @@ import { UserAgentEventSubscriberService } from './service/userAgentEvent.servic
     DocumentReaderService,
     UserAgentRateLimiter,
     UserAgentEventSubscriberService,
+    userAgentGateway,
   ],
 })
 export class UserAgentModule {}

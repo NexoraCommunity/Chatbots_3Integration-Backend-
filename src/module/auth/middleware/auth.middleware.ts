@@ -1,5 +1,11 @@
-import { HttpException, Injectable, NestMiddleware } from '@nestjs/common';
+import {
+  HttpException,
+  Inject,
+  Injectable,
+  NestMiddleware,
+} from '@nestjs/common';
 import { NextFunction, Request, Response } from 'express';
+import Redis from 'ioredis';
 import { JwtService } from 'src/module/auth/service/jwt.service';
 import { PrismaService } from 'src/module/prisma/service/prisma.service';
 
@@ -7,6 +13,8 @@ import { PrismaService } from 'src/module/prisma/service/prisma.service';
 export class AuthMiddleware implements NestMiddleware {
   constructor(
     private jwtService: JwtService,
+    @Inject('REDIS_CLIENT')
+    private readonly redis: Redis,
     private prismaService: PrismaService,
   ) {}
   async use(req: Request, res: Response, next: NextFunction) {
@@ -20,6 +28,9 @@ export class AuthMiddleware implements NestMiddleware {
       const user = await this.prismaService.account.findFirst({
         where: {
           accessToken: token,
+        },
+        include: {
+          user: true,
         },
       });
 

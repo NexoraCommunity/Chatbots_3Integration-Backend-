@@ -1,7 +1,11 @@
-import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
+import {
+  MiddlewareConsumer,
+  Module,
+  NestModule,
+  RequestMethod,
+} from '@nestjs/common';
 import { AuthController } from './auth.controller';
 import { JwtService } from './service/jwt.service';
-
 import { FacebookStrategy } from './strategies/facebook.strategy';
 import { FacebookService } from './service/facebook.service';
 import { GoogleService } from './service/google.service';

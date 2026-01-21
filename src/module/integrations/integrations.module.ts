@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { IntegrationsController } from './integrations.controller';
 import { FacebookApiService } from './service/waba/facebookApi.service';
 import { WabaService } from './service/waba/waba.service';
@@ -31,6 +31,12 @@ import { IntegrationApisController } from './integrationApis.controller';
     Integrationservice,
     WhatsappAuthService,
   ],
-  exports: [FacebookApiService, BaileysService, Integrationservice],
+  exports: [
+    FacebookApiService,
+    BaileysService,
+    Integrationservice,
+    WabaService,
+    BotFatherService,
+  ],
 })
 export class IntegrationsModule {}

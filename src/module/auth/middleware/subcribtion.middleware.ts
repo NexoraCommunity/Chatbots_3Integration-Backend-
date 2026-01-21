@@ -28,6 +28,9 @@ export class Subscribtion1Middleware implements NestMiddleware {
           userSubcribtions: {
             where: {
               userId: user.userId,
+              endDate: {
+                gte: new Date(),
+              },
             },
           },
         },
@@ -71,6 +74,9 @@ export class Subscribtion2Middleware implements NestMiddleware {
           userSubcribtions: {
             where: {
               userId: user.userId,
+              endDate: {
+                gte: new Date(),
+              },
             },
           },
         },
@@ -114,6 +120,9 @@ export class Subscribtion3Middleware implements NestMiddleware {
           userSubcribtions: {
             where: {
               userId: user.userId,
+              endDate: {
+                gte: new Date(),
+              },
             },
           },
         },

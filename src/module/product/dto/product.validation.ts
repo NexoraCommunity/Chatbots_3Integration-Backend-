@@ -8,7 +8,6 @@ export class ProductValidation {
     description: z.string().min(1).max(1000),
     price: z.number(),
     stock: z.number(),
-    isActive: z.boolean(),
     weight: z.number().optional(),
     image: z.string().min(1).max(500),
     sku: z.string().min(1).max(50),

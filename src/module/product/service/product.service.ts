@@ -11,7 +11,6 @@ import {
 } from 'src/model/product.model';
 import { ProductValidation } from '../dto/product.validation';
 import { moveFile } from 'src/interceptors/multer.interceptors';
-import path from 'path';
 
 @Injectable()
 export class ProductService {

@@ -1,4 +1,4 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { OnModuleInit } from '@nestjs/common';
 import {
   makeWASocket,
   DisconnectReason,
@@ -13,25 +13,36 @@ import { AiService } from 'src/module/aiWrapper/service/aiWrapper.service';
 import { ConversationWrapper } from 'src/model/aiWrapper.model';
 import { BotService } from 'src/module/bot/service/bot.service';
 import { UserAgent } from '@prisma/client';
+import { CommonGateway } from 'src/module/common/common.gateway';
 import { CryptoService } from 'src/module/common/other/crypto.service';
 import { AiResponse } from 'src/model/Rag.model';
 import path from 'path';
+import { WebSocketGateway } from '@nestjs/websockets';
 
 type MessagesUpsert = BaileysEventMap['messages.upsert'];
 
-@Injectable()
+@WebSocketGateway({ cors: { origin: '*' } })
 export class BaileysService implements OnModuleInit {
   constructor(
     private whatsappAuth: WhatsappAuthService,
     private prismaService: PrismaService,
     private aiService: AiService,
     private botService: BotService,
+    private commonGateway: CommonGateway,
     private cryptoService: CryptoService,
   ) {}
 
   private bots = new Map<string, any>();
   private botCallbacks = new Map<string, (data: any) => void>();
   private forceStop = new Map<string, boolean>();
+  private handlers = new Map<
+    string,
+    {
+      connectionUpdate: (update: ConnectionState) => void;
+      credsUpdate: () => void;
+      messageUpsert: (msg: MessagesUpsert) => void;
+    }
+  >();
 
   async onModuleInit() {
     const botActives = await this.prismaService.bot.findMany({
@@ -126,12 +137,18 @@ export class BaileysService implements OnModuleInit {
             }, 5000);
           } else {
             this.forceStop.delete(botId);
-
-            cb?.({
+            let update = {
               message: `[${botId}] Logout total, perlu scan ulang. refresh halaman untuk generate qrCode`,
               type: 'baileys',
               botId: botId,
-            });
+            };
+
+            this.commonGateway.emitToUser(
+              `user:${agent.userId}`,
+              'bot',
+              update,
+            );
+
             await this.logOut(botId);
           }
         }
@@ -141,7 +158,7 @@ export class BaileysService implements OnModuleInit {
       const credsUpdate = async () => {
         await saveCreds();
         if (this.bots.get(botId)) return;
-        sendUpdate?.({
+        cb?.({
           message: 'QR berhasil discan. Connecting...',
           botId: botId,
           type: 'baileys',
@@ -165,30 +182,40 @@ export class BaileysService implements OnModuleInit {
               m.message?.extendedTextMessage?.text;
 
             if (text) {
+              let update = {
+                message: `new message from ${sender}`,
+                botId: botId,
+                type: 'baileys',
+              };
+
+              this.commonGateway.emitToUser(
+                `user:${agent.userId}`,
+                'bot',
+                update,
+              );
               const data: ConversationWrapper = {
                 room: `${botId}${sender}`,
                 botId: botId,
+                sender: sender,
                 integrationType: 'baileys',
                 humanHandle: false,
-                message: text,
+                message: {
+                  text: text,
+                  type: 'text',
+                },
               };
               const aiResponse: AiResponse | undefined =
                 await this.aiService.wrapper(data, agent);
 
               if (aiResponse?.messages.length !== undefined) {
                 aiResponse.messages.map(async (e) => {
-                  if (!e.image) {
-                    await sock.sendMessage(String(sender), {
-                      text: e.text,
-                    });
-                  } else {
-                    await sock.sendMessage(String(sender), {
-                      image: {
-                        url: path.join(process.cwd(), e.image),
-                      },
-                      caption: e.text,
-                    });
-                  }
+                  await this.sendMessage(
+                    botId,
+                    sender,
+                    e.text,
+                    e.type,
+                    e.image,
+                  );
                 });
               }
             }
@@ -196,7 +223,25 @@ export class BaileysService implements OnModuleInit {
         } catch (err: any) {
           if (err.message?.includes('No session found to decrypt message')) {
             console.warn('⚠️ Pesan tidak bisa didekripsi, lewati.');
+            let update = {
+              message: `Warning ⚠️ Pesan tidak bisa didekripsi`,
+              botId: botId,
+              type: 'baileys',
+            };
+
+            this.commonGateway.emitToUser(
+              `user:${agent.userId}`,
+              'bot',
+              update,
+            );
           }
+          let update = {
+            message: `Error ❌ saat memproses pesan`,
+            botId: botId,
+            type: 'baileys',
+          };
+
+          this.commonGateway.emitToUser(`user:${agent.userId}`, 'bot', update);
           console.error('❌ Error saat memproses pesan:', err);
         }
       };
@@ -207,6 +252,12 @@ export class BaileysService implements OnModuleInit {
       sock.ev.on('connection.update', connectionUpdate);
       sock.ev.on('creds.update', credsUpdate);
       sock.ev.on('messages.upsert', messageUpsert);
+
+      this.handlers.set(botId, {
+        connectionUpdate,
+        credsUpdate,
+        messageUpsert,
+      });
 
       // ------ End Sequence ------
     } catch (err) {
@@ -219,19 +270,29 @@ export class BaileysService implements OnModuleInit {
   }
 
   // Function to disbale connection baileys
-  async disableBot(botId: string, sendUpdate?: (data: any) => void) {
+  async disableBot(botId: string, cb?: (data: any) => void) {
     this.forceStop.set(botId, true);
-
     const sock = this.bots.get(botId);
+    const handler = this.handlers.get(botId);
+
     if (sock) {
-      await sock.ws.close();
-      await sock.ev.removeAllListeners();
-      sendUpdate?.({
+      if (handler) {
+        sock.ev.off('connection.update', handler.connectionUpdate);
+        sock.ev.off('creds.update', handler.credsUpdate);
+        sock.ev.off('messages.upsert', handler.messageUpsert);
+      }
+
+      sock.ws.close();
+      sock.ev.removeAllListeners();
+      cb?.({
         message: 'Bot Disconnected to Whatsapp',
         botId: botId,
         type: 'baileys',
       });
+
       this.bots.delete(botId);
+      this.botCallbacks.delete(botId);
+      this.handlers.delete(botId);
 
       await this.botService.updateBotStatus(
         { botId: botId, type: 'whatsapp' },
@@ -242,7 +303,10 @@ export class BaileysService implements OnModuleInit {
 
   // Function to handle when user delete session scan
   async logOut(botId: string) {
-    this.bots.delete(botId);
+    const botCallbacks = this.botCallbacks.get(botId);
+
+    this.disableBot(botId, botCallbacks);
+
     await this.botService.updateBotStatus(
       { botId: botId, type: 'whatsapp' },
       false,
@@ -258,5 +322,29 @@ export class BaileysService implements OnModuleInit {
         sessionId: botId,
       },
     });
+  }
+
+  async sendMessage(
+    botId: string,
+    sender: string,
+    text: string,
+    type: string,
+    payload?: any,
+  ) {
+    const bot = this.bots.get(botId);
+    if (!bot) return;
+
+    if (type === 'image') {
+      await bot.sendMessage(String(sender), {
+        image: {
+          url: path.join(process.cwd(), payload),
+        },
+        caption: text,
+      });
+    } else {
+      await bot.sock.sendMessage(sender, {
+        text,
+      });
+    }
   }
 }

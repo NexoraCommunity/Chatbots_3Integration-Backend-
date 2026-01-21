@@ -17,13 +17,13 @@ export class PostProduct {
   description: string;
   price: number;
   image: string;
-  isActive: boolean;
   stock: number;
   sku: string;
   weight: number | null;
   userId: string;
   categoryId: string;
 }
+
 export class ChangeProduct {
   id: string;
   categoryId: string;

@@ -1,22 +1,32 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { OnModuleInit } from '@nestjs/common';
+import { WebSocketGateway } from '@nestjs/websockets';
 import { UserAgent } from '@prisma/client';
 import TelegramBot from 'node-telegram-bot-api';
 import { ConversationWrapper } from 'src/model/aiWrapper.model';
 import { AiService } from 'src/module/aiWrapper/service/aiWrapper.service';
 import { BotService } from 'src/module/bot/service/bot.service';
+import { CommonGateway } from 'src/module/common/common.gateway';
 import { CryptoService } from 'src/module/common/other/crypto.service';
 import { PrismaService } from 'src/module/prisma/service/prisma.service';
 
-@Injectable()
+@WebSocketGateway({ cors: { origin: '*' } })
 export class BotFatherService implements OnModuleInit {
   constructor(
     private aiService: AiService,
     private prismaService: PrismaService,
     private botService: BotService,
+    private commonGateway: CommonGateway,
     private cryptoService: CryptoService,
   ) {}
   private bots = new Map<string, TelegramBot>();
-  private botCallbacks = new Map<string, (data: any) => void>();
+  private callbacks = new Map<string, (data: any) => void>();
+  private handlers = new Map<
+    string,
+    {
+      message: (msg: any) => void;
+      pollingError: (err: any) => void;
+    }
+  >();
 
   async onModuleInit() {
     const botActives = await this.prismaService.bot.findMany({
@@ -47,9 +57,10 @@ export class BotFatherService implements OnModuleInit {
     sendUpdate?: (data: any) => void,
   ) {
     if (sendUpdate) {
-      this.botCallbacks.set(botId, sendUpdate);
+      this.callbacks.set(botId, sendUpdate);
     }
-    const cb = this.botCallbacks.get(botId);
+
+    const cb = this.callbacks.get(botId);
     try {
       if (this.bots.has(botId)) {
         cb?.({ message: '⚠️bot Connected to Telegram', botId: botId });
@@ -73,6 +84,7 @@ export class BotFatherService implements OnModuleInit {
           { botId: botId, data: token, type: 'botFather' },
           true,
         );
+
         cb?.({
           message: 'Bot Connected To Telegram',
           botId: botId,
@@ -85,30 +97,40 @@ export class BotFatherService implements OnModuleInit {
           const data: ConversationWrapper = {
             room: `${botId}${msg.from?.id}`,
             botId: botId,
+            sender: String(msg.chat.id),
             integrationType: 'botFather',
             humanHandle: false,
-            message: msg.text,
+            message: {
+              text: msg.text,
+              type: 'text',
+            },
           };
           const aiResponse = await this.aiService.wrapper(data, agent);
 
+          let update = {
+            message: `new message from${msg.chat.id}`,
+            botId: botId,
+            type: 'botFather',
+          };
+
+          this.commonGateway.emitToUser(`user:${agent.userId}`, 'bot', update);
+
           if (aiResponse?.messages.length !== undefined) {
             aiResponse.messages.map(async (e) => {
-              if (!e.image) {
-                bot.sendMessage(msg.chat.id, e.text);
-              } else {
-                bot.sendPhoto(msg.chat.id, e.image, { caption: e.text });
-              }
+              this.sendMessage(botId, msg.chat.id, e.text, e.type, e.image);
             });
           }
         }
       };
 
       const deletedToken = () => {
-        cb?.({
+        let update = {
           message: '❌ Invalid or deleted bot token ',
           botId,
           type: 'botFather',
-        });
+        };
+
+        this.commonGateway.emitToUser(`user:${agent.userId}`, 'bot', update);
 
         this.disableBot(botId);
 
@@ -128,6 +150,11 @@ export class BotFatherService implements OnModuleInit {
       bot.on('message', message);
       Connection();
 
+      this.handlers.set(botId, {
+        message,
+        pollingError,
+      });
+
       // ------ End Sequence ------
     } catch (error) {
       cb?.({
@@ -140,10 +167,12 @@ export class BotFatherService implements OnModuleInit {
   }
 
   // Function to disable connection botfather
-  async disableBot(botId: string, sendUpdate?: (data: any) => void) {
+  async disableBot(botId: string, cb?: (data: any) => void) {
     const bot = this.bots.get(botId);
+    const handler = this.handlers.get(botId);
+
     if (!bot) {
-      sendUpdate?.({
+      cb?.({
         message: 'Bot Id Not Found',
         botId: botId,
         type: 'botFather',
@@ -152,24 +181,47 @@ export class BotFatherService implements OnModuleInit {
     }
 
     this.botService.updateBotStatus({ botId: botId, type: 'telegram' }, false);
-    sendUpdate?.({
+    cb?.({
       message: 'Bot Disconnected to Telegram',
       botId: botId,
       type: 'botFather',
     });
 
     try {
+      if (handler) {
+        bot.off('message', handler.message);
+        bot.off('polling_error', handler.pollingError);
+      }
       await bot.stopPolling();
 
       bot.removeAllListeners();
 
       this.bots.delete(botId);
+      this.callbacks.delete(botId);
+      this.handlers.delete(botId);
     } catch (e) {
-      sendUpdate?.({
+      cb?.({
         message: `Error disabling bot Because: ${e}`,
         botId: botId,
         type: 'botFather',
       });
+    }
+  }
+
+  async sendMessage(
+    botId: string,
+    sender: string,
+    text: string,
+    type: string,
+    payload?: any,
+  ) {
+    const bot = this.bots.get(botId);
+    if (!bot) return;
+
+    if (type === 'image') {
+      await bot.sendPhoto(sender, payload, { caption: text });
+    } else {
+      await bot.sendMessage(sender, text);
     }
   }
 }

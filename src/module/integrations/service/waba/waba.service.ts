@@ -6,14 +6,16 @@ import { PrismaService } from 'src/module/prisma/service/prisma.service';
 import { AiService } from 'src/module/aiWrapper/service/aiWrapper.service';
 import { ConversationWrapper } from 'src/model/aiWrapper.model';
 import { IntegrationsValidation } from '../../dto/Integration.validation';
-import { UserAgent } from '@prisma/client';
+import { CommonGateway } from 'src/module/common/common.gateway';
+import { WebSocketGateway } from '@nestjs/websockets';
 
-@Injectable()
+@WebSocketGateway({ cors: { origin: '*' } })
 export class WabaService {
   constructor(
     private facebookApiService: FacebookApiService,
     private validationService: ValidationService,
     private prismaService: PrismaService,
+    private commonGateway: CommonGateway,
     private aiService: AiService,
   ) {}
 
@@ -47,16 +49,25 @@ export class WabaService {
       },
     });
 
-    // END Next Chache
+    let update = {
+      message: `new message from ${HookValid.from}`,
+      botId: bot?.id,
+      type: 'Whatsaap Bussiness',
+    };
 
+    this.commonGateway.emitToUser(`user:${bot?.agent.userId}`, 'bot', update);
     if (!bot) return;
 
     const data: ConversationWrapper = {
       room: `${HookValid.numberPhoneId}${HookValid.from}`,
       botId: String(bot?.id),
       integrationType: 'waba',
+      sender: HookValid.numberPhoneId,
       humanHandle: false,
-      message: HookValid.text,
+      message: {
+        text: HookValid.text,
+        type: 'text',
+      },
     };
 
     const aiResponse = await this.aiService.wrapper(data, bot?.agent);

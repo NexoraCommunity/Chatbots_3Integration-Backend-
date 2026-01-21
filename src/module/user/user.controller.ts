@@ -16,8 +16,6 @@ import type { Request, Response } from 'express';
 import { WebResponse } from 'src/model/web.model';
 import { UserService } from './service/user.service';
 import { GetCurrentUser } from 'src/model/user.model';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { imageMulterConfig } from '../../interceptors/multer.interceptors';
 
 @Controller('api')
 export class UserController {
@@ -36,17 +34,14 @@ export class UserController {
   }
 
   @Patch('user/:id')
-  @UseInterceptors(FileInterceptor('image', imageMulterConfig))
   @HttpCode(200)
   async updateUser(
     @Param('id') userId,
     @Body() body,
-    @UploadedFile() file: Express.Multer.File,
   ): Promise<WebResponse<GetCurrentUser>> {
     const data = await this.userService.updateUser({
       ...body,
       id: userId,
-      picture: `/uploads/image/${file}`,
     });
     return {
       data: data,

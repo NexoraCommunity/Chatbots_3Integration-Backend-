@@ -6,14 +6,17 @@ import { ConversationService } from 'src/module/conversation/service/conversatio
 import { MessageService } from 'src/module/message/service/message.service';
 import { UserAgent } from '@prisma/client';
 import { CustomerServiceWorkFlow } from '../Workflow/customerService.workflow';
-import { AiResponse } from 'src/model/Rag.model';
+import { AiResponse, MessageResponse } from 'src/model/Rag.model';
+import { WebSocketGateway } from '@nestjs/websockets';
+import { CommonGateway } from 'src/module/common/common.gateway';
 
-@Injectable()
+@WebSocketGateway({ cors: { origin: '*' } })
 export class AiService {
   constructor(
     private validationService: ValidationService,
     private messageService: MessageService,
     private conversationService: ConversationService,
+    private commonGateway: CommonGateway,
     private customerServiceWorkFlow: CustomerServiceWorkFlow,
   ) {}
 
@@ -22,8 +25,16 @@ export class AiService {
       AiWrapperValidation.aiWrapper,
       req,
     );
+    let aiResponse: AiResponse = new AiResponse();
 
     if (!ReqValid) return;
+
+    if (ReqValid.integrationType === 'testBot') {
+      const res = await this.aiResponses(agent, req.message.text, agent.id);
+      if (!res) return;
+      aiResponse = JSON.parse(res);
+      return aiResponse;
+    }
 
     const conversation =
       await this.conversationService.addNewConversation(ReqValid);
@@ -32,41 +43,45 @@ export class AiService {
       return undefined;
     }
 
-    await this.messageService.addNewMessage({
+    const dataUser = await this.messageService.addNewMessage({
       role: 'user',
       type: 'text',
       conversationId: conversation.id,
       message: ReqValid.message,
     });
 
-    let aiResponse: AiResponse = new AiResponse();
-
-    if (agent.agent === 'customer-service') {
-      const response = await this.customerServiceWorkFlow.workflow(
-        agent,
-        req.message,
-        conversation.room,
+    if (dataUser) {
+      this.commonGateway.emitToUser(
+        `user:${agent.userId}room:${conversation.room}`,
+        'conversation',
+        dataUser,
       );
-
-      if (!response) return;
-
-      let res = response;
-
-      if (agent.llm === 'gemini') {
-        res = this.cleanJsonGemini(response);
-      }
-      aiResponse = JSON.parse(res);
     }
+    const res = await this.aiResponses(
+      agent,
+      req.message.text,
+      conversation.room,
+    );
+    if (!res) return;
+    aiResponse = JSON.parse(res);
 
     if (!aiResponse || aiResponse.messages.length === 0) return;
-    await this.messageService.addNewMessage({
-      role: 'Bot',
-      type: 'text',
-      conversationId: conversation.id,
-      message: String(aiResponse),
-    });
 
-    console.log(aiResponse);
+    aiResponse.messages.map(async (e) => {
+      const dataBot = await this.messageService.addNewMessage({
+        role: 'Bot',
+        type: 'text',
+        conversationId: conversation.id,
+        message: e,
+      });
+      if (dataBot) {
+        this.commonGateway.emitToUser(
+          `user:${agent.userId}room:${conversation.room}`,
+          'conversation',
+          dataBot,
+        );
+      }
+    });
 
     return aiResponse;
   }
@@ -76,5 +91,36 @@ export class AiService {
       .replace(/```json/g, '')
       .replace(/```/g, '')
       .trim();
+  }
+
+  async aiResponses(agent: UserAgent, message: string, room: string) {
+    const response = await this.chooseAgent(agent, message, room);
+
+    if (!response) return;
+
+    let res = response;
+
+    if (agent.llm === 'gemini') {
+      res = this.cleanJsonGemini(response);
+    }
+
+    return res;
+  }
+
+  async chooseAgent(agent: UserAgent, message: string, room: string) {
+    let response;
+    switch (agent.agent) {
+      case 'customer-service':
+        response = await this.customerServiceWorkFlow.workflow(
+          agent,
+          message,
+          room,
+        );
+        break;
+
+      default:
+        break;
+    }
+    return response;
   }
 }

@@ -58,3 +58,8 @@ export class UserAgentResponseById {
   apiKey: string;
   filePath: string;
 }
+
+export class TestAgent {
+  agentId: string;
+  question: string;
+}

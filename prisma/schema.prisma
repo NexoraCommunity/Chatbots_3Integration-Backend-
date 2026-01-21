@@ -297,6 +297,7 @@ model Conversation {
   room            String    @db.VarChar(100)
   humanHandle     Boolean   @default(false)
   integrationType String    @db.VarChar(100)
+  sender          String    @db.VarChar(225)
   messages        Message[]
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
@@ -309,7 +310,7 @@ model Conversation {
 model Message {
   id             String   @id @default(uuid())
   conversationId String
-  message        String
+  message        Json
   type           String   @db.VarChar(100)
   role           String
   createdAt      DateTime @default(now())

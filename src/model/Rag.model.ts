@@ -10,12 +10,13 @@ export class ChatMessage {
 }
 
 export class AiResponse {
-  messages: Message[];
+  messages: MessageResponse[];
 }
 
-export class Message {
+export class MessageResponse {
   text: string;
-  image?: string;
+  image?: string | null;
+  type: string;
 }
 
 export class ProductMessage {
@@ -35,8 +36,16 @@ export const RAGStateAnnotation = Annotation.Root({
     default: () => [],
   }),
   answer: Annotation<string>(),
-  products: Annotation<string>(),
-  order: Annotation<string>(),
+  products: Annotation<string>({
+    value: (_, next) => next,
+    default: () => '',
+  }),
+
+  order: Annotation<string>({
+    value: (_, next) => next,
+    default: () => '',
+  }),
+
   intent: Annotation<'PRODUCT' | 'LEAD' | 'ORDER' | 'HUMAN_HANDLE' | null>(),
   chatHistory: Annotation<ChatMessage[]>({
     value: (prev, next) => [...prev, ...next],

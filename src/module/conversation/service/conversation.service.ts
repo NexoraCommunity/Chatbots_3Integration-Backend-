@@ -124,6 +124,7 @@ export class ConversationService {
         integrationType: req.integrationType,
         userId: String(bot?.userId),
         room: ConversationValid.room,
+        sender: ConversationValid.sender,
       },
     });
 
@@ -151,6 +152,7 @@ export class ConversationService {
         integrationType: data.integrationType,
         humanHandle: data.humanHandle,
         room: data.room,
+        sender: ConversationValid.sender,
       };
       return res;
     } catch (error) {

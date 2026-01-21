@@ -63,13 +63,14 @@ export class CommonGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   handleDisconnect(client: Socket) {
     console.log(`Socket ${client.id} disconnected`);
+    console.log(client.listenerCount('disconnect'));
   }
 
   emitAgentStatus(userId: string, payload: any) {
     this.server.to(`user:${userId}`).emit('agent-status', payload);
   }
 
-  emitToUser(userId: string, event: string, payload: any) {
-    this.server.to(`user:${userId}`).emit(event, payload);
+  emitToUser(room: string, event: string, payload: any) {
+    this.server.to(room).emit(event, payload);
   }
 }

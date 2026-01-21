@@ -10,6 +10,8 @@ import {
   MessageApi,
 } from 'src/model/message.model';
 import { MessageValidation } from '../dto/message.validation';
+import { toPrismaJson } from 'src/model/contentIntegrations.model';
+import { MessageResponse } from 'src/model/Rag.model';
 
 @Injectable()
 export class MessageService {
@@ -104,11 +106,11 @@ export class MessageService {
     if (!MessageValid) throw new HttpException('Validation Error', 400);
 
     const data = await this.prismaService.message.create({
-      data: MessageValid,
+      data: { ...MessageValid, message: toPrismaJson(MessageValid.message) },
     });
 
     const res: MessageApi = {
-      message: data.message,
+      message: data.message as unknown as MessageResponse,
       conversationId: data.conversationId,
       type: data.type,
       role: data.role,
@@ -129,11 +131,11 @@ export class MessageService {
         where: {
           id: req.id,
         },
-        data: MessageValid,
+        data: { ...MessageValid, message: toPrismaJson(MessageValid.message) },
       });
 
       const res: MessageApi = {
-        message: data.message,
+        message: data.message as unknown as MessageResponse,
         conversationId: data.conversationId,
         type: data.type,
         role: data.role,

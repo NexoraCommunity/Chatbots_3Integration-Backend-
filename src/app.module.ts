@@ -22,6 +22,9 @@ import { UserAgentModule } from './module/UserAgent/userAgent.module';
 import { SubcribtionModule } from './module/subcribtion/subcribtion.module';
 import { UserSubcribtionModule } from './module/userSubcribtion/userSubcribtion.module';
 import { FeatureModule } from './module/feature/feature.module';
+import { APP_GUARD } from '@nestjs/core';
+import { RateLimitGuard } from './ratelimit.guard';
+import { DashboardModule } from './module/dashboard/dashboard.module';
 
 @Module({
   imports: [
@@ -46,10 +49,16 @@ import { FeatureModule } from './module/feature/feature.module';
     QueueModule,
     RedisModule,
     SubcribtionModule,
+    DashboardModule,
     UserSubcribtionModule,
     FeatureModule,
   ],
   controllers: [],
-  providers: [],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: RateLimitGuard,
+    },
+  ],
 })
 export class AppModule {}
