@@ -22,7 +22,7 @@ export class VectorStoreService implements OnModuleInit {
   ) {}
 
   private client = new QdrantClient({
-    url: process.env.QDRANT_DB || 'http://localhost:6333',
+    url: process.env.QDRANT_URL || 'http://localhost:6333',
   });
 
   private splitter = new RecursiveCharacterTextSplitter({

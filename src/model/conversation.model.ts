@@ -28,6 +28,7 @@ export class GetModelConversation {
   integrationType?: string | null;
   userId?: string | null;
   botId?: string | null;
+  humanHandle?: boolean | null;
   page: string;
   limit: string;
 }

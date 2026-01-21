@@ -1,13 +1,150 @@
-version: '3.7'
+version: '3.8'
 
 services:
-  mariadb:
-    image: mariadb:latest
-    container_name: mariadb
-    restart: always
+  # ==================================
+  # Database - PostgreSQL
+  # ==================================
+  postgres:
+    image: postgres:14.20-trixie
+    container_name: chatbot-postgres
+    restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: secret
+      POSTGRES_USER: ${DB_USERNAME:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-secret}
+      POSTGRES_DB: ${DB_NAME:-chatbot}
+      PGDATA: /var/lib/postgresql/data/pgdata
     volumes:
-      - ./data:/var/lib/mysql
+      - postgres_data:/var/lib/postgresql/data
     ports:
-      - '3306:3306'
+      - '${DB_PORT:-5432}:5432'
+    networks:
+      - chatbot-network
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          'pg_isready -U ${DB_USERNAME:-postgres} -d ${DB_NAME:-chatbot}',
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ==================================
+  # Redis - For BullMQ Queues
+  # ==================================
+  redis:
+    image: redis:latest
+    container_name: chatbot-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    ports:
+      - '${REDIS_PORT:-6379}:6379'
+    networks:
+      - chatbot-network
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ==================================
+  # Qdrant - Vector Store
+  # ==================================
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: chatbot-qdrant
+    restart: unless-stopped
+    volumes:
+      - qdrant_data:/qdrant/storage
+    ports:
+      - '${QDRANT_PORT:-6333}:6333'
+      - '6334:6334' # gRPC port
+    networks:
+      - chatbot-network
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          "timeout 10s bash -c ':> /dev/tcp/127.0.0.1/6333' || exit 1",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # ==================================
+  # NestJS Application
+  # ==================================
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: chatbot-app
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: ${DATABASE_URL:-postgresql://postgres:secret@postgres:5432/chatbot}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      QDRANT_URL: http://qdrant:6333
+    env_file:
+      - .env
+    ports:
+      - '${APP_PORT:-8080}:8080'
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
+    networks:
+      - chatbot-network
+    volumes:
+      - ./uploads:/app/uploads
+      - ./data:/app/data
+    command: ['/app/entrypoint.sh']
+
+  # ==================================
+  # Worker - Vector Store Processing
+  # ==================================
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: chatbot-worker
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: ${DATABASE_URL:-postgresql://postgres:secret@postgres:5432/chatbot}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      QDRANT_URL: http://qdrant:6333
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
+    networks:
+      - chatbot-network
+    volumes:
+      - ./uploads:/app/uploads
+      - ./data:/app/data
+    command: ['/app/entrypoint.worker.sh']
+
+networks:
+  chatbot-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:
+  qdrant_data:
