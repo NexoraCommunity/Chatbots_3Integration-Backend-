@@ -13,14 +13,10 @@ import {
 
 import type { Response } from 'express';
 import { WabaService } from './service/waba/waba.service';
-import { Integrationservice } from './service/integration.service';
 
 @Controller('/auth')
 export class IntegrationsController {
-  constructor(
-    private wabaService: WabaService,
-    private integrationService: Integrationservice,
-  ) {}
+  constructor(private wabaService: WabaService) {}
 
   @Get('/waba/callback')
   verifyWebhook(

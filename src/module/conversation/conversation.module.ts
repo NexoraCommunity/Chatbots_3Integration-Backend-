@@ -3,11 +3,10 @@ import { ConversationService } from './service/conversation.service';
 import { ConversationController } from './conversation.controller';
 import { IntegrationsModule } from '../integrations/integrations.module';
 import { MessageModule } from '../message/message.module';
-import { ConversationGateway } from './conversation.gateway';
 
 @Module({
   imports: [forwardRef(() => IntegrationsModule), MessageModule],
-  providers: [ConversationService, ConversationGateway],
+  providers: [ConversationService],
   controllers: [ConversationController],
   exports: [ConversationService],
 })

@@ -9,7 +9,6 @@ import { BotFatherService } from './service/botFather/botFather.service';
 import { MessageModule } from '../message/message.module';
 import { ConversationModule } from '../conversation/conversation.module';
 import { AiWrapperModule } from '../aiWrapper/aiWrapper.module';
-import { integrationGateway } from './integration.gateway';
 import { Integrationservice } from './service/integration.service';
 import { BotModule } from '../bot/bot.module';
 import { IntegrationApisController } from './integrationApis.controller';

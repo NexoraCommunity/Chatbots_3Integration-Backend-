@@ -25,6 +25,7 @@ import { FeatureModule } from './module/feature/feature.module';
 import { APP_GUARD } from '@nestjs/core';
 import { RateLimitGuard } from './ratelimit.guard';
 import { DashboardModule } from './module/dashboard/dashboard.module';
+import { GatewayModule } from './module/gateway/gateway.module';
 
 @Module({
   imports: [
@@ -50,6 +51,7 @@ import { DashboardModule } from './module/dashboard/dashboard.module';
     RedisModule,
     SubcribtionModule,
     DashboardModule,
+    GatewayModule,
     UserSubcribtionModule,
     FeatureModule,
   ],

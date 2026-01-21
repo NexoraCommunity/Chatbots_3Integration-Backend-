@@ -7,16 +7,15 @@ import { MessageService } from 'src/module/message/service/message.service';
 import { UserAgent } from '@prisma/client';
 import { CustomerServiceWorkFlow } from '../Workflow/customerService.workflow';
 import { AiResponse, MessageResponse } from 'src/model/Rag.model';
-import { WebSocketGateway } from '@nestjs/websockets';
-import { CommonGateway } from 'src/module/common/common.gateway';
+import { GatewayEventService } from 'src/module/gateway/gatewayEventEmiter';
 
-@WebSocketGateway({ cors: { origin: '*' } })
+@Injectable()
 export class AiService {
   constructor(
     private validationService: ValidationService,
     private messageService: MessageService,
     private conversationService: ConversationService,
-    private commonGateway: CommonGateway,
+    private gatewayEventService: GatewayEventService,
     private customerServiceWorkFlow: CustomerServiceWorkFlow,
   ) {}
 
@@ -51,8 +50,8 @@ export class AiService {
     });
 
     if (dataUser) {
-      this.commonGateway.emitToUser(
-        `user:${agent.userId}room:${conversation.room}`,
+      this.gatewayEventService.emitToUser(
+        `room:${conversation.room}`,
         'conversation',
         dataUser,
       );
@@ -75,8 +74,8 @@ export class AiService {
         message: e,
       });
       if (dataBot) {
-        this.commonGateway.emitToUser(
-          `user:${agent.userId}room:${conversation.room}`,
+        this.gatewayEventService.emitToUser(
+          `room:${conversation.room}`,
           'conversation',
           dataBot,
         );

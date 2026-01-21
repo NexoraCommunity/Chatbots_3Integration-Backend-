@@ -1,27 +1,28 @@
-import { SubscribeMessage, WebSocketGateway } from '@nestjs/websockets';
+import {
+  MessageBody,
+  SubscribeMessage,
+  WebSocketGateway,
+} from '@nestjs/websockets';
 import { Socket } from 'socket.io';
-import { CommonGateway } from '../common/common.gateway';
-import { AiService } from '../aiWrapper/service/aiWrapper.service';
 import { ConversationWrapper } from 'src/model/aiWrapper.model';
 import { TestAgent } from 'src/model/userAgent.model';
-import { PrismaService } from '../prisma/service/prisma.service';
-import { CryptoService } from '../common/other/crypto.service';
 import { UserAgent } from '@prisma/client';
 import { Injectable } from '@nestjs/common';
+import { CryptoService } from 'src/module/common/other/crypto.service';
+import { AiService } from 'src/module/aiWrapper/service/aiWrapper.service';
+import { PrismaService } from 'src/module/prisma/service/prisma.service';
+import { GatewayEventService } from '../gatewayEventEmiter';
 
 @Injectable()
-export class userAgentGateway {
+export class userAgentSocket {
   constructor(
-    private commonGateway: CommonGateway,
+    private gatewayEventService: GatewayEventService,
     private aiWrapperService: AiService,
     private cryptoService: CryptoService,
     private prismaService: PrismaService,
   ) {}
-  @SubscribeMessage('testAgent')
-  async testAgent(client: Socket, req: TestAgent) {
-    const userId = client.data.userId;
-    client.join(`user:${userId}`);
 
+  async testAgent(@MessageBody() req: TestAgent, roomJoin: string) {
     const agent = await this.prismaService.userAgent.findUnique({
       where: {
         id: req.agentId,
@@ -41,8 +42,8 @@ export class userAgentGateway {
     };
 
     if (!agent) {
-      this.commonGateway.emitToUser(
-        userId,
+      this.gatewayEventService.emitToUser(
+        roomJoin,
         'testAgent',
         'AgentId is not Found!!',
       );
@@ -60,7 +61,7 @@ export class userAgentGateway {
 
     if (aiResponse?.messages.length !== undefined) {
       aiResponse.messages.map(async (e) => {
-        this.commonGateway.emitToUser(userId, 'testAgent', e);
+        this.gatewayEventService.emitToUser(roomJoin, 'testAgent', e);
       });
     }
   }

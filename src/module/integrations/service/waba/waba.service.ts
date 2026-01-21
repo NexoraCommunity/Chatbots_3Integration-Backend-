@@ -6,7 +6,6 @@ import { PrismaService } from 'src/module/prisma/service/prisma.service';
 import { AiService } from 'src/module/aiWrapper/service/aiWrapper.service';
 import { ConversationWrapper } from 'src/model/aiWrapper.model';
 import { IntegrationsValidation } from '../../dto/Integration.validation';
-import { CommonGateway } from 'src/module/common/common.gateway';
 import { WebSocketGateway } from '@nestjs/websockets';
 
 @WebSocketGateway({ cors: { origin: '*' } })
@@ -15,7 +14,6 @@ export class WabaService {
     private facebookApiService: FacebookApiService,
     private validationService: ValidationService,
     private prismaService: PrismaService,
-    private commonGateway: CommonGateway,
     private aiService: AiService,
   ) {}
 
@@ -55,7 +53,7 @@ export class WabaService {
       type: 'Whatsaap Bussiness',
     };
 
-    this.commonGateway.emitToUser(`user:${bot?.agent.userId}`, 'bot', update);
+    // this.commonGateway.emitToUser(`user:${bot?.agent.userId}`, 'bot', update);
     if (!bot) return;
 
     const data: ConversationWrapper = {

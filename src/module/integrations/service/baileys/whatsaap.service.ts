@@ -1,4 +1,4 @@
-import { OnModuleInit } from '@nestjs/common';
+import { Injectable, OnModuleInit } from '@nestjs/common';
 import {
   makeWASocket,
   DisconnectReason,
@@ -13,22 +13,21 @@ import { AiService } from 'src/module/aiWrapper/service/aiWrapper.service';
 import { ConversationWrapper } from 'src/model/aiWrapper.model';
 import { BotService } from 'src/module/bot/service/bot.service';
 import { UserAgent } from '@prisma/client';
-import { CommonGateway } from 'src/module/common/common.gateway';
 import { CryptoService } from 'src/module/common/other/crypto.service';
 import { AiResponse } from 'src/model/Rag.model';
 import path from 'path';
-import { WebSocketGateway } from '@nestjs/websockets';
+import { GatewayEventService } from 'src/module/gateway/gatewayEventEmiter';
 
 type MessagesUpsert = BaileysEventMap['messages.upsert'];
 
-@WebSocketGateway({ cors: { origin: '*' } })
+@Injectable()
 export class BaileysService implements OnModuleInit {
   constructor(
     private whatsappAuth: WhatsappAuthService,
     private prismaService: PrismaService,
     private aiService: AiService,
     private botService: BotService,
-    private commonGateway: CommonGateway,
+    private gatewayEventService: GatewayEventService,
     private cryptoService: CryptoService,
   ) {}
 
@@ -143,11 +142,7 @@ export class BaileysService implements OnModuleInit {
               botId: botId,
             };
 
-            this.commonGateway.emitToUser(
-              `user:${agent.userId}`,
-              'bot',
-              update,
-            );
+            this.gatewayEventService.emitToUser(`bot:${botId}`, 'bot', update);
 
             await this.logOut(botId);
           }
@@ -188,8 +183,8 @@ export class BaileysService implements OnModuleInit {
                 type: 'baileys',
               };
 
-              this.commonGateway.emitToUser(
-                `user:${agent.userId}`,
+              this.gatewayEventService.emitToUser(
+                `bot:${botId}`,
                 'bot',
                 update,
               );
@@ -228,12 +223,7 @@ export class BaileysService implements OnModuleInit {
               botId: botId,
               type: 'baileys',
             };
-
-            this.commonGateway.emitToUser(
-              `user:${agent.userId}`,
-              'bot',
-              update,
-            );
+            this.gatewayEventService.emitToUser(`bot:${botId}`, 'bot', update);
           }
           let update = {
             message: `Error ❌ saat memproses pesan`,
@@ -241,7 +231,7 @@ export class BaileysService implements OnModuleInit {
             type: 'baileys',
           };
 
-          this.commonGateway.emitToUser(`user:${agent.userId}`, 'bot', update);
+          this.gatewayEventService.emitToUser(`bot:${botId}`, 'bot', update);
           console.error('❌ Error saat memproses pesan:', err);
         }
       };
@@ -342,7 +332,7 @@ export class BaileysService implements OnModuleInit {
         caption: text,
       });
     } else {
-      await bot.sock.sendMessage(sender, {
+      await bot.sendMessage(sender, {
         text,
       });
     }

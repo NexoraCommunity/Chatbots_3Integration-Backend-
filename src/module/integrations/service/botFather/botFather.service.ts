@@ -1,21 +1,20 @@
-import { OnModuleInit } from '@nestjs/common';
-import { WebSocketGateway } from '@nestjs/websockets';
+import { Injectable, OnModuleInit } from '@nestjs/common';
 import { UserAgent } from '@prisma/client';
 import TelegramBot from 'node-telegram-bot-api';
 import { ConversationWrapper } from 'src/model/aiWrapper.model';
 import { AiService } from 'src/module/aiWrapper/service/aiWrapper.service';
 import { BotService } from 'src/module/bot/service/bot.service';
-import { CommonGateway } from 'src/module/common/common.gateway';
 import { CryptoService } from 'src/module/common/other/crypto.service';
+import { GatewayEventService } from 'src/module/gateway/gatewayEventEmiter';
 import { PrismaService } from 'src/module/prisma/service/prisma.service';
 
-@WebSocketGateway({ cors: { origin: '*' } })
+@Injectable()
 export class BotFatherService implements OnModuleInit {
   constructor(
     private aiService: AiService,
     private prismaService: PrismaService,
+    private gatewayEventService: GatewayEventService,
     private botService: BotService,
-    private commonGateway: CommonGateway,
     private cryptoService: CryptoService,
   ) {}
   private bots = new Map<string, TelegramBot>();
@@ -113,13 +112,12 @@ export class BotFatherService implements OnModuleInit {
             type: 'botFather',
           };
 
-          this.commonGateway.emitToUser(`user:${agent.userId}`, 'bot', update);
-
           if (aiResponse?.messages.length !== undefined) {
             aiResponse.messages.map(async (e) => {
               this.sendMessage(botId, msg.chat.id, e.text, e.type, e.image);
             });
           }
+          this.gatewayEventService.emitToUser(`bot:${botId}`, 'bot', update);
         }
       };
 
@@ -129,8 +127,7 @@ export class BotFatherService implements OnModuleInit {
           botId,
           type: 'botFather',
         };
-
-        this.commonGateway.emitToUser(`user:${agent.userId}`, 'bot', update);
+        this.gatewayEventService.emitToUser(`bot:${botId}`, 'bot', update);
 
         this.disableBot(botId);
 

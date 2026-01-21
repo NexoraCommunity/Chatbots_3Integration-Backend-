@@ -1,11 +1,11 @@
 import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import Redis from 'ioredis';
-import { CommonGateway } from 'src/module/common/common.gateway';
+import { MainGateway } from 'src/module/gateway/main.gateway';
 
 @Injectable()
 export class UserAgentEventSubscriberService implements OnModuleInit {
   constructor(
-    private readonly gateway: CommonGateway,
+    private readonly gateway: MainGateway,
     @Inject('REDIS_SUB')
     private readonly redis: Redis,
   ) {}
