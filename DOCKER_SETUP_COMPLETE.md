@@ -6,7 +6,8 @@ Your NestJS ChatBot application is now running in Docker with all required servi
 
 | Service | Container Name | Port | Status |
 |---------|---------------|------|--------|
-| **Main App** | `chatbot-app` | 8080 | ✅ Running |
+| **Nginx** | `chatbot-nginx` | 80 | ✅ Running |
+| **Main App** | `chatbot-app` | 8080 (internal) | ✅ Running |
 | **Worker** | `chatbot-worker` | - | ✅ Running  |
 | **PostgreSQL** | `chatbot-postgres` | 5432 | ✅ Healthy |
 | **Redis** | `chatbot-redis` | 6379 | ✅ Healthy |
@@ -14,9 +15,14 @@ Your NestJS ChatBot application is now running in Docker with all required servi
 
 ## 📦 Services Overview
 
+### 🌐 Nginx Reverse Proxy (`chatbot-nginx`)
+- **Purpose**: Reverse proxy / Load balancer
+- **Access**: http://localhost (port 80)
+- **Features**: Proxies to NestJS app, WebSocket support, compression, security headers
+
 ### 🚀 Main Application (`chatbot-app`)
 - **Purpose**: NestJS REST API server
-- **Access**: http://localhost:8080
+- **Access**: Internal only (port 8080)
 - **Features**: Handles HTTP requests, WebSocket connections, authentication, etc.
 
 ### ⚙️ Worker (`chatbot-worker`)
@@ -102,8 +108,8 @@ docker stats
 
 ## 🔍 Accessing Services
 
-- **API**: http://localhost:8080
-- **Qdrant Dashboard**: http://localhost:6333/dashboard
+- **API** (via Nginx): http://localhost  
+- **Qdrant Dashboard**: http://localhost:6333/dashboard  
 - **PostgreSQL**: `localhost:5432` (user: `postgres`, db: `chatbot`)
 - **Redis**: `localhost:6379`
 
