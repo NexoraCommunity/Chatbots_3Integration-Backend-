@@ -40,6 +40,9 @@ export class ChangeProduct {
 export class GetModelProduct {
   userId?: string;
   categoryId?: string;
+  sku?: string;
+  harga?: string;
+  status?: string;
   page: string;
   limit: string;
 }

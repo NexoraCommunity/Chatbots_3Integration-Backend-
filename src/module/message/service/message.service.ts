@@ -41,7 +41,11 @@ export class MessageService {
       orderBy: { createdAt: 'desc' },
     });
 
-    const totalData = await this.prismaService.message.count();
+    const totalData = await this.prismaService.message.count({
+      where: {
+        conversationId: conversationId,
+      },
+    });
 
     return {
       message: data,

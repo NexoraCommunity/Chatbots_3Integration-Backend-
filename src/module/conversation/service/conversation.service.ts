@@ -24,22 +24,28 @@ export class ConversationService {
     const ConversationValid: GetModelConversation =
       this.validationService.validate(ConversationValidation.Pagination, query);
     if (!ConversationValid) throw new HttpException('Validation Error', 400);
-    const { page, limit, integrationType, userId, botId } = ConversationValid;
+    const { page, limit, integrationType, userId, botId, humanHandle } =
+      ConversationValid;
     if (integrationType == '' || !integrationType)
       throw new HttpException('Validation Error', 400);
 
+    const whereClause: any = {
+      userId,
+      ...(integrationType && { integrationType }),
+      ...(humanHandle && { humanHandle }),
+      ...(botId && { botId: String(botId) }),
+    };
+
     const data = await this.prismaService.conversation.findMany({
-      where: {
-        integrationType: integrationType,
-        userId: String(userId || null),
-        botId: String(botId || null),
-      },
+      where: whereClause,
       skip: (Number(page) - 1) * Number(limit),
       take: Number(limit),
       orderBy: { createdAt: 'desc' },
     });
 
-    const totalData = await this.prismaService.conversation.count();
+    const totalData = await this.prismaService.conversation.count({
+      where: whereClause,
+    });
 
     return {
       Conversation: data,

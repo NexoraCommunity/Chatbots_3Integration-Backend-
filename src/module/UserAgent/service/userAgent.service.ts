@@ -48,7 +48,11 @@ export class UserAgentService {
       orderBy: { createdAt: 'desc' },
     });
 
-    const totalData = await this.prismaService.userAgent.count();
+    const totalData = await this.prismaService.userAgent.count({
+      where: {
+        userId: query.userId,
+      },
+    });
 
     return {
       UserAgent: data,

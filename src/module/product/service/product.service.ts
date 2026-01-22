@@ -27,9 +27,18 @@ export class ProductService {
       query,
     );
     if (!ProductValid) throw new HttpException('Validation Error', 400);
-    const { page, limit, userId } = ProductValid;
+    const { page, limit, userId, categoryId, harga, sku, status } =
+      ProductValid;
     if (userId == '' || !userId)
       throw new HttpException('Validation Error', 400);
+
+    const whereClause: any = {
+      userId,
+      ...(categoryId && { categoryId }),
+      ...(harga && { harga: Number(harga) }),
+      ...(sku && { sku: String(sku) }),
+      ...(status && { status: String(status) }),
+    };
 
     const data = await this.prismaService.product.findMany({
       where: {
@@ -40,7 +49,11 @@ export class ProductService {
       orderBy: { createdAt: 'desc' },
     });
 
-    const totalData = await this.prismaService.product.count();
+    const totalData = await this.prismaService.product.count({
+      where: {
+        userId: query.userId,
+      },
+    });
 
     return {
       Product: data,
