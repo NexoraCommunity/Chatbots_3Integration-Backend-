@@ -22,6 +22,7 @@ export class ConversationSocket {
       await this.SendtoIntegration(req);
       const message: MessageApi = {
         conversationId: conversationId,
+        sentiment: 'netral',
         message: {
           text: text,
           type: type,

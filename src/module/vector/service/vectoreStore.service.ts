@@ -45,10 +45,9 @@ export class VectorStoreService implements OnModuleInit {
     return this.vectorSize;
   }
   async onModuleInit() {
-    const size = 3072;
-
-    await this.ensureCollection('AgentUserProduct', size);
-    await this.ensureCollection('AgentUserDocument', size);
+    // const size = 3072; (1536)
+    // await this.ensureCollection('AgentUserProduct', size);
+    // await this.ensureCollection('AgentUserDocument', size);
   }
   private validateVector(vector: number[]) {
     if (!Array.isArray(vector) || vector.length === 0) {

@@ -7,11 +7,12 @@ import { ChatMemoryRedisService } from '../ChatMemoryRedis.service';
 import { OpenAiEmbbedingService } from 'src/module/embedding/service/openAIEmbedding.service';
 import { CustomerServiceWorkFlow } from '../Workflow/customerService.workflow';
 import { ChoosenLLmService } from './ChoosenLLm.service';
+import { SupabaseStoreService } from 'src/module/vector/service/supabaseStore.service';
 
 @Injectable()
 export class RAGService {
   constructor(
-    private readonly vectorStoreService: VectorStoreService,
+    private readonly vectorStoreService: SupabaseStoreService, // VectorStoreService,
     private readonly embeddingService: XenovaEmbeddings,
     private readonly choosenLLmService: ChoosenLLmService,
     private readonly openAIEmbeddingService: OpenAiEmbbedingService,
@@ -74,7 +75,7 @@ export class RAGService {
 
     if (results)
       return {
-        documents: results.map((r) => r.payload?.text ?? ''),
+        documents: results.map((r) => r.content ?? r.payload?.text),
       };
   }
 
@@ -82,17 +83,14 @@ export class RAGService {
     const history = this.memorizeService.trimHistory(state.chatHistory ?? []);
     const memory = this.memorizeService.formatChatHistory(history);
 
-    const contextSections: string[] = [];
-
     const prompt = this.customerServiceWorkflow.customerServicePrompt(
       agent?.prompt,
       memory,
       state,
     );
 
+    console.log(prompt);
     const completion = await llm.invoke(prompt);
-
-    console.log(completion.content);
 
     return {
       answer: completion.content,

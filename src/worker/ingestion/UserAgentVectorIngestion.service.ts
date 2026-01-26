@@ -3,11 +3,12 @@ import { Job } from 'bullmq';
 import { PrismaService } from 'src/module/prisma/service/prisma.service';
 import { VectorStoreService } from 'src/module/vector/service/vectoreStore.service';
 import { UserAgentEventPublisher } from '../redisPublisher/userAgentEventPublisher';
+import { SupabaseStoreService } from 'src/module/vector/service/supabaseStore.service';
 
 @Injectable()
 export class UserAgentVectorIngestionService {
   constructor(
-    private readonly vectorStore: VectorStoreService,
+    private readonly vectorStore: SupabaseStoreService, // VectorStoreService,
     private readonly prismaService: PrismaService,
     private userAgentEventPublisher: UserAgentEventPublisher,
   ) {}
@@ -129,14 +130,14 @@ export class UserAgentVectorIngestionService {
     await this.vectorStore.deleteByFilter('AgentUserDocument', {
       must: [
         { key: 'userId', match: { value: userId } },
-        { key: 'documentId', match: { value: userAgentId } },
+        { key: 'agentId', match: { value: userAgentId } },
       ],
     });
 
     await this.vectorStore.deleteByFilter('AgentUserProduct', {
       must: [
         { key: 'userId', match: { value: userId } },
-        { key: 'documentId', match: { value: userAgentId } },
+        { key: 'agentId', match: { value: userAgentId } },
       ],
     });
   }

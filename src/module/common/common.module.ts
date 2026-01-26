@@ -3,7 +3,6 @@ import { ConfigModule } from '@nestjs/config';
 import { PrismaService } from '../prisma/service/prisma.service';
 import { ValidationService } from './other/validation.service';
 import { CryptoService } from './other/crypto.service';
-import { VectorStoreService } from '../vector/service/vectoreStore.service';
 import { XenovaEmbeddings } from '../embedding/service/xenovaEmbbeding.service';
 import { CommonController } from './common.controller';
 import { DocumentReaderService } from '../embedding/service/documentReader.service';
@@ -25,7 +24,6 @@ import { PrismaModule } from '../prisma/prisma.module';
     ValidationService,
     CryptoService,
     XenovaEmbeddings,
-    VectorStoreService,
     DocumentReaderService,
   ],
   exports: [
@@ -34,7 +32,6 @@ import { PrismaModule } from '../prisma/prisma.module';
     XenovaEmbeddings,
     CryptoService,
     DocumentReaderService,
-    VectorStoreService,
   ],
 })
 export class CommonModule {}

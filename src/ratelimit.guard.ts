@@ -30,10 +30,7 @@ export class RateLimitGuard implements CanActivate {
     }
 
     if (count > 5) {
-      throw new HttpException(
-        'Too many request, please wait 10 second',
-        429,
-      );
+      throw new HttpException('Too many request, please wait 10 second', 429);
     }
 
     return true;

@@ -7,13 +7,43 @@
 - Tambah Bot Logs (Bot Gateway) *Done*
 - RateLimit Api *Done*
 - Tambah Dashboard *Done*
-- Tambah Cs Handle when order Trigger
-
+- Tambah Cs Handle when order Trigger *Done*
+- Untuk Uji Coba Mvp (pake supabase dulu) *Done*
+- Buat Subcribtion Dumy
+- Limiting token / request
+- Untuk Umkm plan call Api groq dari frontend
+- Buat webSocket Generating from client
 - Buat Order Rest Api
 - Buat Invoice.
 - Buat Transaction dan implement payment gate way (setiap account)
 - Buat Check ongkir sederhana.
+- Improve Customer Service WorkFlow
+- Buat Follow Up Feature
+- Buat Ticketing Feature For A Problem
+- Buat Ai Analytics Feature
 - Pastikan Workflow Berjalan dengan lancar 
 
 
+
+
+
+
+
+
+
+Feature
+- Subcribtion
+- limiting token
+- order
+- transaction
+- payment Gateway
+- auto follow Up
+- deals
+- Invoice
+- check ongkir
+- Ticketing
+- ai Analytics
+- Admin panel
+
+other WorkFlow
 

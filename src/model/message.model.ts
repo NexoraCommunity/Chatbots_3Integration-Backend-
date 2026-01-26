@@ -5,6 +5,7 @@ import { Message } from '@prisma/client';
 export class MessageApi {
   conversationId: string;
   message: MessageResponse;
+  sentiment: string;
   type: string;
   role: string;
 }
@@ -12,12 +13,14 @@ export class MessageApi {
 export class PostMessage {
   conversationId: string;
   type: string;
+  sentiment: string;
   message: MessageResponse;
   role: string;
 }
 export class ChangeMessage {
   id: string;
   type: string;
+  sentiment: string;
   message: MessageResponse;
   role: string;
 }

@@ -163,24 +163,11 @@ model UserAgent {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user          User           @relation(fields: [userId], references: [id], onUpdate: Cascade)
-  bot           Bot[]
-  agentProducts AgentProduct[]
+  user User  @relation(fields: [userId], references: [id], onUpdate: Cascade)
+  bot  Bot[]
 
   @@index([userId])
   @@map("UserAgent")
-}
-
-model AgentProduct {
-  id String @id @default(uuid())
-
-  agentId   String
-  productId String
-
-  agent   UserAgent @relation(fields: [agentId], references: [id], onDelete: Cascade)
-  product Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
-
-  @@unique([agentId, productId])
 }
 
 model Product {
@@ -204,7 +191,6 @@ model Product {
   variantOptions  VariantOption[]
   productVariants ProductVariant[]
   orderItem       OrderItem[]
-  agentProducts   AgentProduct[]
 
   @@index([userId])
   @@index([categoryId])
@@ -311,6 +297,7 @@ model Message {
   id             String   @id @default(uuid())
   conversationId String
   message        Json
+  sentiment      String
   type           String   @db.VarChar(100)
   role           String
   createdAt      DateTime @default(now())

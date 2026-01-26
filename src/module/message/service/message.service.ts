@@ -118,6 +118,7 @@ export class MessageService {
       conversationId: data.conversationId,
       type: data.type,
       role: data.role,
+      sentiment: data.sentiment,
     };
 
     return res;
@@ -143,6 +144,7 @@ export class MessageService {
         conversationId: data.conversationId,
         type: data.type,
         role: data.role,
+        sentiment: data.sentiment,
       };
       return res;
     } catch (error) {

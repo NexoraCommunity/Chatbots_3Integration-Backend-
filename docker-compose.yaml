@@ -52,53 +52,27 @@ services:
   # ==================================
   # Qdrant - Vector Store
   # ==================================
-  qdrant:
-    image: qdrant/qdrant:latest
-    container_name: chatbot-qdrant
-    restart: unless-stopped
-    volumes:
-      - qdrant_data:/qdrant/storage
-    ports:
-      - '${QDRANT_PORT:-6333}:6333'
-      - '6334:6334' # gRPC port
-    networks:
-      - chatbot-network
-    healthcheck:
-      test:
-        [
-          'CMD-SHELL',
-          "timeout 10s bash -c ':> /dev/tcp/127.0.0.1/6333' || exit 1",
-        ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 10s
-
-  # ==================================
-  # Nginx - Reverse Proxy
-  # ==================================
-  nginx:
-    image: nginx:alpine
-    container_name: chatbot-nginx
-    restart: unless-stopped
-    ports:
-      - '${NGINX_PORT:-80}:80'
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
-    depends_on:
-      app:
-        condition: service_started
-    networks:
-      - chatbot-network
-    healthcheck:
-      test:
-        [
-          'CMD-SHELL',
-          'wget --no-verbose --tries=1 --spider http://localhost/health || exit 1',
-        ]
-      interval: 10s
-      timeout: 5s
-      retries: 3
+  # qdrant:
+  #   image: qdrant/qdrant:latest
+  #   container_name: chatbot-qdrant
+  #   restart: unless-stopped
+  #   volumes:
+  #     - qdrant_data:/qdrant/storage
+  #   ports:
+  #     - '${QDRANT_PORT:-6333}:6333'
+  #     - '6334:6334' # gRPC port
+  #   networks:
+  #     - chatbot-network
+  #   healthcheck:
+  #     test:
+  #       [
+  #         'CMD-SHELL',
+  #         "timeout 10s bash -c ':> /dev/tcp/127.0.0.1/6333' || exit 1",
+  #       ]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 5
+  #     start_period: 10s
 
   # ==================================
   # NestJS Application
@@ -125,8 +99,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-      qdrant:
-        condition: service_healthy
+      # qdrant:
+      #   condition: service_healthy
     networks:
       - chatbot-network
     volumes:
@@ -157,8 +131,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-      qdrant:
-        condition: service_healthy
+      # qdrant:
+      #   condition: service_healthy
     networks:
       - chatbot-network
     volumes:

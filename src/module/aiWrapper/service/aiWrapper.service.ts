@@ -45,6 +45,7 @@ export class AiService {
     const dataUser = await this.messageService.addNewMessage({
       role: 'user',
       type: 'text',
+      sentiment: 'netral',
       conversationId: conversation.id,
       message: ReqValid.message,
     });
@@ -69,6 +70,7 @@ export class AiService {
     aiResponse.messages.map(async (e) => {
       const dataBot = await this.messageService.addNewMessage({
         role: 'Bot',
+        sentiment: 'netral',
         type: 'text',
         conversationId: conversation.id,
         message: e,

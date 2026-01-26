@@ -11,12 +11,14 @@ export class MessageValidation {
     conversationId: z.string().min(1).max(225),
     message: MessageResponse,
     type: z.string().min(1).max(50),
+    sentiment: z.string().min(1).max(50),
     role: z.string().min(1).max(50),
   });
   static readonly chageMessage: ZodType = z.object({
     id: z.string().min(1).max(225),
     message: MessageResponse,
     type: z.string().min(1).max(50),
+    sentiment: z.string().min(1).max(50),
   });
   static readonly Pagination: ZodType = z.object({
     page: z.string().min(1).max(50),

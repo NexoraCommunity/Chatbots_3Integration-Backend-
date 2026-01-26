@@ -10,13 +10,14 @@ import { XenovaEmbeddings } from 'src/module/embedding/service/xenovaEmbbeding.s
 import { PrismaService } from 'src/module/prisma/service/prisma.service';
 import { RAGService } from '../service/RAG.service';
 import { OpenAiEmbbedingService } from 'src/module/embedding/service/openAIEmbedding.service';
+import { SupabaseStoreService } from 'src/module/vector/service/supabaseStore.service';
 
 @Injectable()
 export class CustomerServiceWorkFlow {
   constructor(
     private readonly choosenLLmService: ChoosenLLmService,
     private ragService: RAGService,
-    private readonly vectorStoreService: VectorStoreService,
+    private readonly vectorStoreService: SupabaseStoreService, // VectorStoreService,
     private readonly embeddingService: XenovaEmbeddings,
     private readonly openAiEmbbedingService: OpenAiEmbbedingService,
     private prismaService: PrismaService,
@@ -119,7 +120,7 @@ export class CustomerServiceWorkFlow {
       );
 
       const productIds = results?.points?.map((r) =>
-        String(r.payload?.productId),
+        String(r.payload?.metadata?.productId ?? r.payload?.productId),
       );
 
       const data = await this.prismaService.product.findMany({
@@ -158,7 +159,10 @@ export class CustomerServiceWorkFlow {
       3,
     );
 
-    const productIds = results?.map((r) => String(r.payload?.productId)) || [];
+    const productIds =
+      results?.map((r) =>
+        String(r.metadata?.productId ?? r.payload?.productId),
+      ) || [];
 
     if (productIds.length !== 0) {
       const data = await this.prismaService.product.findMany({
@@ -279,12 +283,12 @@ export class CustomerServiceWorkFlow {
       - It is not mandatory to use the KNOWLEDGE CONTEXT
 
       STRICT GUIDELINES:
-      1. Answers MUST be based on the KNOWLEDGE CONTEXT / CONVERSATION HISTORY
-      2. Do not add information outside the context
-      3. If the information is not available, respond politely and naturally:
+      - Answers MUST be based on the KNOWLEDGE CONTEXT / CONVERSATION HISTORY
+      - Do not add information outside the context
+      - If the information is not available, respond politely and naturally:
         "Sorry, this information is not available in our data at the moment 🙏"
-      4. Maximum answer length: 2–3 sentences
-      5. Do not use phrases such as "based on the data" or "context"
+      - Maximum answer length: 2–3 sentences
+      - Do not use phrases such as "based on the data" or "context"
 
         IMAGE RULES (VERY IMPORTANT):
       - You MUST ONLY include "image" if an EXACT IMAGE_PATH string already exists in the PRODUCT INFORMATION.
@@ -312,10 +316,10 @@ export class CustomerServiceWorkFlow {
       ${memory || 'No previous conversation.'}
 
       KNOWLEDGE CONTEXT:
-      ${context}
+               ${context}
 
       PRODUCT INFORMATION:
-      ${state.products}
+               ${state.products}
 
      
       CUSTOMER QUESTION:
@@ -323,13 +327,23 @@ export class CustomerServiceWorkFlow {
 
       OUTPUT FORMAT (JSON ONLY, NO EXTRA TEXT):
      
-      SINGLE MESSAGE EXAMPLE:
+      SINGLE MESSAGE TYPE TEXT EXAMPLE:
       {
         "messages": [
         {
           "text": "Jawaban ramah dan natural",
           "image": null,
-          "type":"text || image"
+          "type":"text"
+        }
+       ]
+      }
+      SINGLE MESSAGE TYPE IMAGE EXAMPLE:
+      {
+        "messages": [
+        {
+          "text": "Jawaban ramah dan natural",
+          "image": IMAGE_PATH,
+          "type":"image"
         }
        ]
       }
