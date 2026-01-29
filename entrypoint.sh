@@ -1,6 +1,12 @@
 #!/bin/sh
-echo "Running migrations..."
+set -e
+
+echo "🚀 Application Starting..."
+echo "Waiting for database to be ready..."
+sleep 5
+
+echo "📦 Running Prisma migrations..."
 npx prisma migrate deploy
 
-echo "Starting app..."
-npm run start:prod
+echo "✅ Starting NestJS application..."
+exec node dist/main.js

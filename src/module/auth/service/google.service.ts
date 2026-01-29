@@ -20,7 +20,17 @@ export class GoogleService {
     const refreshToken = this.jwtService.generateRefreshToken(detailUsers.id);
 
     if (user) {
-      await this.jwtService.generateAccessToken(String(user.refreshToken));
+      const newRefreshToken = await this.prismaService.account.update({
+        where: {
+          id: user?.id,
+        },
+        data: {
+          refreshToken: refreshToken,
+        },
+      });
+      await this.jwtService.generateAccessToken(
+        String(newRefreshToken.refreshToken),
+      );
       return user;
     }
     const newUser = await this.prismaService.user.create({

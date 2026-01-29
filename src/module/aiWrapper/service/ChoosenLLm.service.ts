@@ -14,11 +14,11 @@ export class ChoosenLLmService {
   async chooseLLM(LLM: string, model: string, apiKey: string) {
     switch (LLM) {
       case 'groq':
-        return await this.groqService.createCompletions(apiKey, model);
+        return this.groqService.getClient(apiKey, model);
       case 'gemini':
-        return await this.geminiService.createCompletions(apiKey, model);
+        return this.geminiService.getClient(apiKey, model);
       case 'openRouter':
-        return await this.openRouterService.createCompletions(apiKey, model);
+        return this.openRouterService.getClient(apiKey, model);
       default:
         throw new Error(`Unsupported LLM provider: ${LLM}`);
     }

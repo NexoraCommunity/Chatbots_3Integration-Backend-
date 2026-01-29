@@ -41,7 +41,7 @@ export class VariantOptionService {
     }
   }
 
-  async addNewVariantOption(req: VariantOptionApi): Promise<VariantOptionApi> {
+  async addNewVariantOption(req: VariantOptionApi): Promise<VariantOption> {
     const VariantOptionValid: VariantOptionApi =
       this.validationService.validate(VariantValidation.VariantOption, req);
 
@@ -51,7 +51,7 @@ export class VariantOptionService {
       data: VariantOptionValid,
     });
 
-    const res: VariantOptionApi = data;
+    const res: VariantOption = data;
 
     return res;
   }

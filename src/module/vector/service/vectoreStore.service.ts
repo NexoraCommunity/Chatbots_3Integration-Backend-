@@ -11,21 +11,24 @@ import { RecursiveCharacterTextSplitter } from '@langchain/textsplitters';
 import { randomUUID } from 'crypto';
 import { Decimal } from '@prisma/client/runtime/library';
 import { ProductWithVariants } from 'src/model/product.model';
+import { OpenAiEmbbedingService } from 'src/module/embedding/service/openAIEmbedding.service';
 
 @Injectable()
 export class VectorStoreService implements OnModuleInit {
   constructor(
     private documentReaderService: DocumentReaderService,
     private xenovaEmbbeding: XenovaEmbeddings,
+    private readonly openAiEmbeddingService: OpenAiEmbbedingService,
   ) {}
 
   private client = new QdrantClient({
-    url: process.env.QDRANT_DB || 'http://localhost:6333',
+    url: process.env.QDRANT_URL || 'http://localhost:6333',
   });
 
   private splitter = new RecursiveCharacterTextSplitter({
-    chunkSize: 500,
+    chunkSize: 350,
     chunkOverlap: 50,
+    separators: ['\n# ', '\n## ', '\n### ', '\n\n', '\n', ' ', ''],
   });
 
   private vectorSize: number;
@@ -33,16 +36,18 @@ export class VectorStoreService implements OnModuleInit {
   async getVectorSize(): Promise<number> {
     if (this.vectorSize) return this.vectorSize;
 
-    const embedding = await this.xenovaEmbbeding.embedDocuments(['ping']);
+    // const embedding = await this.xenovaEmbbeding.embedDocuments(['ping']);
+    const embedding = await this.openAiEmbeddingService.embedDocuments([
+      'ping',
+    ]);
     this.vectorSize = embedding[0].length;
 
     return this.vectorSize;
   }
   async onModuleInit() {
-    const size = await this.getVectorSize();
-
-    await this.ensureCollection('AgentUserProduct', size);
-    await this.ensureCollection('AgentUserDocument', size);
+    // const size = 3072; (1536)
+    // await this.ensureCollection('AgentUserProduct', size);
+    // await this.ensureCollection('AgentUserDocument', size);
   }
   private validateVector(vector: number[]) {
     if (!Array.isArray(vector) || vector.length === 0) {
@@ -224,6 +229,18 @@ export class VectorStoreService implements OnModuleInit {
     }
   }
 
+  async searchByFilter(collection: string, filter?: any) {
+    try {
+      return await this.client.scroll(collection, {
+        filter,
+        with_payload: true,
+        with_vector: false,
+      });
+    } catch (error) {
+      this.handleQdrantError(error);
+    }
+  }
+
   /* =========================
      Store Vector Document 
   ========================= */
@@ -239,8 +256,11 @@ export class VectorStoreService implements OnModuleInit {
 
     for (let i = 0; i < texts.length; i += BATCH_SIZE) {
       const batch = texts.slice(i, i + BATCH_SIZE);
-      const batchEmbedding = await this.xenovaEmbbeding.embedDocuments(batch);
-      embeddings.push(...batchEmbedding);
+      // const batchEmbedding = await this.xenovaEmbbeding.embedDocuments(batch);
+      const batchEmbedding =
+        await this.openAiEmbeddingService.embedDocuments(batch);
+
+      if (batchEmbedding) embeddings.push(...batchEmbedding);
     }
 
     const ids = splitedText.map(() => randomUUID());
@@ -250,7 +270,7 @@ export class VectorStoreService implements OnModuleInit {
       documentId: agentId,
       chunkIndex: i,
       source: filePath,
-      textPreview: chunk.pageContent.slice(0, 200),
+      text: chunk.pageContent,
     }));
 
     await this.storeMany(embeddings, 'AgentUserDocument', ids, payloads);
@@ -269,7 +289,7 @@ export class VectorStoreService implements OnModuleInit {
 
     const texts = splitedText.map((d) => d.pageContent);
 
-    const embeddings = await this.xenovaEmbbeding.embedDocuments(texts);
+    const embeddings = await this.openAiEmbeddingService.embedDocuments(texts);
 
     const ids = splitedText.map(() => randomUUID());
 
@@ -294,22 +314,24 @@ export class VectorStoreService implements OnModuleInit {
   ) {
     const texts = products.map(this.serializeProductForEmbedding);
 
-    const embeddings = await this.xenovaEmbbeding.embedDocuments(texts);
+    // const embeddings = await this.xenovaEmbbeding.embedDocuments(texts);
+    const embeddings = await this.openAiEmbeddingService.embedDocuments(texts);
 
-    for (let i = 0; i < products.length; i++) {
-      await this.storeOne(embeddings[i], 'AgentUserProduct', products[i].id, {
-        type: 'product',
-        agentId,
-        userId,
-        productId: products[i].id,
-        categoryId: products[i].categoryId,
-        sku: products[i].sku,
-        price: Number(products[i].price),
-        stock: products[i].stock,
-        isActive: products[i].stock > 0,
-        hasVariant: products[i].productVariants.length > 0,
-      });
-    }
+    if (embeddings)
+      for (let i = 0; i < products.length; i++) {
+        await this.storeOne(embeddings[i], 'AgentUserProduct', products[i].id, {
+          type: 'product',
+          agentId,
+          userId,
+          productId: products[i].id,
+          categoryId: products[i].categoryId,
+          isActive: products[i].isActive,
+          sku: products[i].sku,
+          price: Number(products[i].price),
+          stock: products[i].stock,
+          hasVariant: products[i].productVariants.length > 0,
+        });
+      }
   }
 
   formatPrice(price: Decimal | number) {

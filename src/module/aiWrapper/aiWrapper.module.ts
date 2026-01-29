@@ -5,17 +5,20 @@ import { AiService } from './service/aiWrapper.service';
 import { MessageModule } from '../message/message.module';
 import { ConversationModule } from '../conversation/conversation.module';
 import { CustomerServiceWorkFlow } from './Workflow/customerService.workflow';
-import { ChoosenLLmService } from './Workflow/service/ChoosenLLm.service';
-import { RAGService } from './Workflow/service/RAG.service';
+import { ChoosenLLmService } from './service/ChoosenLLm.service';
+import { ChatMemoryRedisService } from './ChatMemoryRedis.service';
+import { RAGService } from './service/RAG.service';
+import { CustomerModule } from '../customer/customer.module';
 
 @Module({
-  imports: [LlmModule, MessageModule, ConversationModule],
+  imports: [LlmModule, MessageModule, ConversationModule, CustomerModule],
   providers: [
     AiService,
     CustomerServiceWorkFlow,
     ChoosenLLmService,
+    ChatMemoryRedisService,
     RAGService,
   ],
-  exports: [AiService, CustomerServiceWorkFlow],
+  exports: [AiService, CustomerServiceWorkFlow, RAGService],
 })
 export class AiWrapperModule {}

@@ -19,8 +19,9 @@ export class JwtService {
     if (!securityCode) {
       return;
     }
-    const token = jwt.sign({ email, jti: randomUUID() }, securityCode, {
+    const token = jwt.sign({ email }, securityCode, {
       expiresIn: '7d',
+      jwtid: randomUUID(),
     });
     return token;
   }

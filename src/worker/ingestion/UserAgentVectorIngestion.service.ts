@@ -3,11 +3,12 @@ import { Job } from 'bullmq';
 import { PrismaService } from 'src/module/prisma/service/prisma.service';
 import { VectorStoreService } from 'src/module/vector/service/vectoreStore.service';
 import { UserAgentEventPublisher } from '../redisPublisher/userAgentEventPublisher';
+import { SupabaseStoreService } from 'src/module/vector/service/supabaseStore.service';
 
 @Injectable()
 export class UserAgentVectorIngestionService {
   constructor(
-    private readonly vectorStore: VectorStoreService,
+    private readonly vectorStore: SupabaseStoreService, // VectorStoreService,
     private readonly prismaService: PrismaService,
     private userAgentEventPublisher: UserAgentEventPublisher,
   ) {}
@@ -59,55 +60,61 @@ export class UserAgentVectorIngestionService {
   }
 
   async DegestAgent(job: Job) {
-    const { userAgentId, userId, filePath, productIds } = job.data;
+    const {
+      userAgentId,
+      userId,
+      filePath,
+      productIds,
+      isFileSame,
+      isProductSame,
+    } = job.data;
     try {
-      await this.vectorStore.deleteByFilter('AgentUserDocument', {
-        must: [
-          { key: 'userId', match: { value: userId } },
-          { key: 'documentId', match: { value: userAgentId } },
-        ],
-      });
+      await this.deleteAllVectorByUserOrPrompt(userId, userAgentId);
 
-      await this.vectorStore.deleteByFilter('AgentUserProduct', {
-        must: [
-          { key: 'userId', match: { value: userId } },
-          { key: 'documentId', match: { value: userAgentId } },
-        ],
-      });
-
-      const products = await this.prismaService.product.findMany({
-        where: { id: { in: productIds } },
-        include: {
-          variantOptions: {
+      if (productIds.length !== 0 || filePath) {
+        if (!isProductSame) {
+          const products = await this.prismaService.product.findMany({
+            where: { id: { in: productIds } },
             include: {
-              values: true,
-            },
-          },
-          productVariants: {
-            include: {
-              values: {
+              variantOptions: {
                 include: {
-                  value: true,
+                  values: true,
+                },
+              },
+              productVariants: {
+                include: {
+                  values: {
+                    include: {
+                      value: true,
+                    },
+                  },
                 },
               },
             },
-          },
-        },
-      });
+          });
 
-      if (products.length !== productIds.length) {
-        throw new HttpException('Some products not found', 400);
+          if (products.length !== productIds.length) {
+            throw new HttpException('Some products not found', 400);
+          }
+
+          await this.vectorStore.storeVectorProduct(
+            products,
+            userAgentId,
+            userId,
+          );
+        }
+
+        if (!isFileSame) {
+          await this.vectorStore.storeVectorFile(filePath, userAgentId, userId);
+        }
+
+        await this.userAgentEventPublisher.agentReady(userId, userAgentId);
+
+        await this.prismaService.userAgent.update({
+          where: { id: userAgentId },
+          data: { vectoreStatus: 'READY' },
+        });
       }
-      await this.vectorStore.storeVectorProduct(products, userAgentId, userId);
-
-      await this.vectorStore.storeVectorFile(filePath, userAgentId, userId);
-
-      await this.userAgentEventPublisher.agentReady(userId, userAgentId);
-
-      await this.prismaService.userAgent.update({
-        where: { id: userAgentId },
-        data: { vectoreStatus: 'READY' },
-      });
     } catch (error) {
       await this.userAgentEventPublisher.agentFailed(userId, userAgentId);
 
@@ -117,5 +124,21 @@ export class UserAgentVectorIngestionService {
       });
       throw error;
     }
+  }
+
+  async deleteAllVectorByUserOrPrompt(userId: string, userAgentId: string) {
+    await this.vectorStore.deleteByFilter('AgentUserDocument', {
+      must: [
+        { key: 'userId', match: { value: userId } },
+        { key: 'agentId', match: { value: userAgentId } },
+      ],
+    });
+
+    await this.vectorStore.deleteByFilter('AgentUserProduct', {
+      must: [
+        { key: 'userId', match: { value: userId } },
+        { key: 'agentId', match: { value: userAgentId } },
+      ],
+    });
   }
 }

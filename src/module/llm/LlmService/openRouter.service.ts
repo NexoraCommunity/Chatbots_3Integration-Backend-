@@ -3,15 +3,23 @@ import { ChatOpenAI } from '@langchain/openai';
 
 @Injectable()
 export class OpenRouterService {
-  async createCompletions(OPENROUTER_API_KEY: string, model: string) {
-    const OPENAI = new ChatOpenAI({
+  private clients = new Map<string, ChatOpenAI>();
+
+  getClient(apiKey: string, model: string) {
+    const cacheKey = `${apiKey}:${model}`;
+    if (this.clients.has(cacheKey)) {
+      return this.clients.get(cacheKey);
+    }
+
+    const client = new ChatOpenAI({
       model: model,
-      apiKey: OPENROUTER_API_KEY,
+      apiKey: apiKey,
       temperature: 0,
       maxRetries: 0,
       timeout: 30000,
     });
 
-    return OPENAI;
+    this.clients.set(cacheKey, client);
+    return client;
   }
 }

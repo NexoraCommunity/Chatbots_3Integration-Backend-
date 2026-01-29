@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { IntegrationsController } from './integrations.controller';
 import { FacebookApiService } from './service/waba/facebookApi.service';
 import { WabaService } from './service/waba/waba.service';
@@ -9,7 +9,6 @@ import { BotFatherService } from './service/botFather/botFather.service';
 import { MessageModule } from '../message/message.module';
 import { ConversationModule } from '../conversation/conversation.module';
 import { AiWrapperModule } from '../aiWrapper/aiWrapper.module';
-import { integrationGateway } from './integration.gateway';
 import { Integrationservice } from './service/integration.service';
 import { BotModule } from '../bot/bot.module';
 import { IntegrationApisController } from './integrationApis.controller';
@@ -31,6 +30,12 @@ import { IntegrationApisController } from './integrationApis.controller';
     Integrationservice,
     WhatsappAuthService,
   ],
-  exports: [FacebookApiService, BaileysService, Integrationservice],
+  exports: [
+    FacebookApiService,
+    BaileysService,
+    Integrationservice,
+    WabaService,
+    BotFatherService,
+  ],
 })
 export class IntegrationsModule {}

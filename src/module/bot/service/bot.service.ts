@@ -35,14 +35,18 @@ export class BotService {
 
     const data = await this.prismaService.bot.findMany({
       where: {
-        userId: query.userId,
+        userId: userId,
       },
       skip: (Number(page) - 1) * Number(limit),
       take: Number(limit),
       orderBy: { createdAt: 'desc' },
     });
 
-    const totalData = await this.prismaService.bot.count();
+    const totalData = await this.prismaService.bot.count({
+      where: {
+        userId: userId,
+      },
+    });
 
     return {
       bot: data,

@@ -6,6 +6,7 @@ export class ProductApi {
   description: string;
   price: number;
   image: string;
+  isActive: boolean;
   stock: number;
   sku: string;
   weight: number | null;
@@ -22,12 +23,14 @@ export class PostProduct {
   userId: string;
   categoryId: string;
 }
+
 export class ChangeProduct {
   id: string;
   categoryId: string;
   name: string;
   description: string;
   price: number;
+  isActive: boolean;
   image: string;
   stock: number;
   sku: string;
@@ -37,6 +40,9 @@ export class ChangeProduct {
 export class GetModelProduct {
   userId?: string;
   categoryId?: string;
+  sku?: string;
+  harga?: string;
+  status?: string;
   page: string;
   limit: string;
 }

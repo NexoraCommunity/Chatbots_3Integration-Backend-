@@ -220,8 +220,8 @@ export class CredentialStrategy {
   async refreshAccessToken(refreshToken: string) {
     if (!refreshToken)
       throw new HttpException('refreshToken is expired!!', 400);
-    const isValid = this.jwtService.verificationToken(String(refreshToken));
-    if (!isValid) throw new HttpException('refreshToken is invalid!!', 400);
+    const isValid = this.jwtService.verificationToken(refreshToken);
+    if (!isValid) throw new HttpException(`refreshToken is invalid!!`, 400);
 
     const accessToken = await this.jwtService.generateAccessToken(
       String(refreshToken),

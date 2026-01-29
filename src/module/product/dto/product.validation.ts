@@ -17,6 +17,7 @@ export class ProductValidation {
     categoryId: z.string().min(1).max(225),
     name: z.string().min(1).max(500),
     description: z.string().min(1).max(1000),
+    isActive: z.boolean(),
     price: z.number(),
     stock: z.number(),
     weight: z.number().optional(),
